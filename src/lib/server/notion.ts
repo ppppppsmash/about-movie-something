@@ -125,7 +125,14 @@ export async function addNotionMovie(m: {
 /** Patch an existing Notion page. Verifies ownership against the supplied email first. */
 export async function updateNotionMovie(
   page_id: string,
-  fields: { status?: 'watched' | 'queue'; best?: boolean; rating?: Rating; watched_on?: string },
+  fields: {
+    status?: 'watched' | 'queue';
+    best?: boolean;
+    rating?: Rating;
+    watched_on?: string;
+    note?: string;
+    public?: boolean;
+  },
   requiredOwner: string
 ): Promise<AddResult> {
   if (!env.NOTION_API_KEY) return { ok: false, error: 'NOTION_API_KEY is not set' };
@@ -153,6 +160,9 @@ export async function updateNotionMovie(
   if (fields.rating !== undefined) properties.rating = { number: fields.rating };
   if (fields.watched_on !== undefined)
     properties.watched_on = fields.watched_on ? { date: { start: fields.watched_on } } : null;
+  if (fields.note !== undefined)
+    properties.note = { rich_text: [{ text: { content: fields.note } }] };
+  if (fields.public !== undefined) properties.public = { checkbox: fields.public };
 
   if (Object.keys(properties).length === 0) {
     return { ok: false, error: 'No editable fields supplied' };
@@ -305,7 +315,8 @@ export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie
       rating: n.rating ?? base?.rating,
       notion_page_id: n.page_id,
       note: n.note,
-      note_updated: n.note_updated
+      note_updated: n.note_updated,
+      public: n.public
     });
   }
 

@@ -27,6 +27,8 @@ export type Movie = {
   note?: string;
   /** ISO timestamp of last Notion page edit — used to sort the /notes feed. */
   note_updated?: string;
+  /** When true, this row's note is visible to other signed-in users. */
+  public?: boolean;
   // ----- Filled by src/lib/server/tmdb.ts at build time (do not hand-edit): -----
   poster?: string;
   overview?: string;

@@ -9,6 +9,8 @@ type PatchBody = {
   best?: boolean;
   rating?: 1 | 2 | 3 | 4 | 5;
   watched_on?: string;
+  note?: string;
+  public?: boolean;
 };
 
 /** PATCH /api/movies/[id] — update a Notion page. Only the page's owner may edit. */
