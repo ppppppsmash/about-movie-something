@@ -1,4 +1,4 @@
-import { getCombinedMovies } from '$lib/server/notion';
+import { getVisibleNotes } from '$lib/server/notion';
 import { resolveLocale } from '$lib/i18n';
 import type { PageServerLoad } from './$types';
 
@@ -8,8 +8,6 @@ export const load: PageServerLoad = async ({ params, locals, depends }) => {
   depends('app:movies');
   const session = await locals.auth();
   const locale = resolveLocale(params.lang);
-  const movies = session?.user?.email
-    ? await getCombinedMovies(locale, session.user.email)
-    : await getCombinedMovies(locale);
-  return { movies };
+  const notes = session?.user?.email ? await getVisibleNotes(session.user.email, locale) : [];
+  return { notes };
 };

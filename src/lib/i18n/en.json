@@ -23,6 +23,8 @@
   "notes.subtitle": "What you wrote about the films you watched",
   "notes.empty": "No notes yet — add a note to any movie's row in Notion.",
   "notes.section": "Notes",
+  "notes.by_you": "you",
+  "notes.public": "public",
   "today.subtitle": "5 picks for today",
   "today.empty": "No trending movies available.",
   "section.cast": "Cast",
