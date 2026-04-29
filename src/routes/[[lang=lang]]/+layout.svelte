@@ -19,7 +19,7 @@
   onNavigate((navigation) => {
     if (typeof document === 'undefined') return;
     if (typeof document.startViewTransition !== 'function') return;
-    if (window.matchMedia('(max-width: 1023px)').matches) return;
+    if (window.matchMedia('(max-width: 1149px)').matches) return;
 
     return new Promise((resolve) => {
       document.startViewTransition(async () => {
@@ -36,7 +36,7 @@
 
 {#if !isHome}
   <aside
-    class="hidden min-[1024px]:block fixed right-[calc(50%_+_250px_+_8rem)] top-56 w-[120px] z-10"
+    class="hidden min-[1150px]:block fixed right-[calc(50%_+_250px_+_8rem)] top-56 w-[180px] z-10"
   >
     <MainNav transitionName />
   </aside>

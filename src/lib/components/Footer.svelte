@@ -10,8 +10,8 @@
 </script>
 
 <footer class="mt-16 text-sm">
-  <!-- Mobile-only: at >= 1024px the MainNav lives in the left sidebar (root +layout.svelte) -->
-  <div class="min-[1024px]:hidden">
+  <!-- Mobile-only: at >= 1150px the MainNav lives in the left sidebar (root +layout.svelte) -->
+  <div class="min-[1150px]:hidden">
     <MainNav transitionName />
   </div>
 

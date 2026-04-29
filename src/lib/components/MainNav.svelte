@@ -15,6 +15,7 @@
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/movies')} class={link}>{t(locale, 'nav.movies')}</a></li>
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/notes')} class={link}>{t(locale, 'nav.notes')}</a></li>
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/about')} class={link}>{t(locale, 'nav.about')}</a></li>
+    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/today')} class={link}>{t(locale, 'nav.today')}</a></li>
   </ol>
 </nav>
 

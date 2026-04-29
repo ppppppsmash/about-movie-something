@@ -79,3 +79,98 @@ async function enrichOne(m: Movie, key: string, language: string): Promise<Movie
     return m;
   }
 }
+
+// ─── Daily picks (random selection from a top-rated pool) ────────────────
+
+export type PickedMovie = {
+  id: number;
+  title: string;
+  year: number;
+  overview?: string;
+  poster?: string;
+};
+
+type TmdbListResult = {
+  id: number;
+  title?: string;
+  original_title?: string;
+  overview?: string;
+  release_date?: string;
+  poster_path?: string | null;
+};
+
+const dailyCache: Record<Locale, PickedMovie[] | null> = { en: null, ja: null };
+
+/** Fetches a top-rated pool from TMDB and returns `count` movies, deterministically
+ *  shuffled by today's UTC date (YYYY-MM-DD). Same date → same picks across rebuilds. */
+export async function getDailyPicks(
+  locale: Locale = 'ja',
+  count = 5
+): Promise<PickedMovie[]> {
+  if (dailyCache[locale]) return dailyCache[locale]!.slice(0, count);
+
+  const key = env.TMDB_API_KEY;
+  if (!key) {
+    dailyCache[locale] = [];
+    return [];
+  }
+
+  const language = locale === 'ja' ? 'ja-JP' : 'en-US';
+  const pool: PickedMovie[] = [];
+
+  try {
+    // Pool = top_rated pages 1–5 (≈ 100 movies)
+    const pages = await Promise.all(
+      [1, 2, 3, 4, 5].map((page) =>
+        fetch(`${API_BASE}/movie/top_rated?language=${language}&page=${page}&api_key=${key}`).then(
+          (res) => (res.ok ? res.json() : { results: [] })
+        )
+      )
+    );
+    for (const data of pages) {
+      for (const m of (data.results ?? []) as TmdbListResult[]) {
+        pool.push({
+          id: m.id,
+          title: m.title || m.original_title || '',
+          year: m.release_date ? Number(m.release_date.slice(0, 4)) : 0,
+          overview: m.overview || undefined,
+          poster: m.poster_path ? `${IMG_BASE}${m.poster_path}` : undefined
+        });
+      }
+    }
+  } catch (err) {
+    console.warn(`[tmdb] top_rated (${language}): fetch failed —`, err);
+    dailyCache[locale] = [];
+    return [];
+  }
+
+  const seed = new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
+  const picks = pickRandom(pool, count, seed);
+  dailyCache[locale] = picks;
+  return picks;
+}
+
+function pickRandom<T>(pool: T[], count: number, seed: string): T[] {
+  if (pool.length <= count) return pool.slice();
+  const rng = seededRandom(seed);
+  const seen = new Set<number>();
+  const out: T[] = [];
+  while (out.length < count) {
+    const i = Math.floor(rng() * pool.length);
+    if (!seen.has(i)) {
+      seen.add(i);
+      out.push(pool[i]);
+    }
+  }
+  return out;
+}
+
+/** Tiny deterministic LCG seeded from a string. */
+function seededRandom(seed: string): () => number {
+  let h = 0;
+  for (const c of seed) h = (h * 31 + c.charCodeAt(0)) | 0;
+  return () => {
+    h = (Math.imul(h, 1103515245) + 12345) | 0;
+    return (h >>> 0) / 0x100000000;
+  };
+}

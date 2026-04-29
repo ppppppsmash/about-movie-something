@@ -1,6 +1,6 @@
 <script lang="ts">
   import { page } from '$app/state';
-  import { roman, type Movie } from '$lib/data/movies';
+  import type { Movie } from '$lib/data/movies';
   import { resolveLocale, localePath } from '$lib/i18n';
 
   let { data } = $props();
@@ -53,11 +53,6 @@
                 </p>
                 <p class="text-sm font-serif-light">{movie.director} · {movie.year}</p>
               </div>
-              {#if movie.rating}
-                <span class="self-center text-xs font-serif-light tracking-wider"
-                  >{roman(movie.rating)}</span
-                >
-              {/if}
             </a>
           </li>
         {/each}
