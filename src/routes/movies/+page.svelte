@@ -1,14 +1,18 @@
 <script lang="ts">
-  import { movies, roman, type Movie } from '$lib/data/movies';
+  import { roman, type Movie } from '$lib/data/movies';
 
-  const watched = movies.filter((m) => m.status === 'watched');
+  let { data } = $props();
 
-  const byYear: Record<string, Movie[]> = {};
-  for (const m of watched) {
-    const y = (m.watched_on ?? String(m.year)).slice(0, 4);
-    (byYear[y] ??= []).push(m);
-  }
-  const years = Object.keys(byYear).sort().reverse();
+  const watched = $derived(data.movies.filter((m: Movie) => m.status === 'watched'));
+  const byYear = $derived.by(() => {
+    const m: Record<string, Movie[]> = {};
+    for (const movie of watched) {
+      const y = (movie.watched_on ?? String(movie.year)).slice(0, 4);
+      (m[y] ??= []).push(movie);
+    }
+    return m;
+  });
+  const years = $derived(Object.keys(byYear).sort().reverse());
 </script>
 
 <svelte:head>
@@ -23,13 +27,25 @@
       >
         {year}
       </h2>
-      <ul class="grid gap-3">
+      <ul class="grid gap-4">
         {#each byYear[year] as movie}
-          <li class="flex items-baseline gap-2">
-            <span class="font-serif-bold">{movie.title}</span>
-            <span class="text-sm font-serif-light">— {movie.director} ({movie.year})</span>
+          <li class="flex items-start gap-3">
+            {#if movie.poster}
+              <img
+                src={movie.poster}
+                alt=""
+                loading="lazy"
+                class="block w-12 h-auto border border-mute"
+              />
+            {/if}
+            <div class="flex-1 leading-tight">
+              <p class="font-serif-bold">{movie.title}</p>
+              <p class="text-sm font-serif-light">{movie.director} · {movie.year}</p>
+            </div>
             {#if movie.rating}
-              <span class="ml-auto text-xs font-serif-light tracking-wider">{roman(movie.rating)}</span>
+              <span class="self-center text-xs font-serif-light tracking-wider"
+                >{roman(movie.rating)}</span
+              >
             {/if}
           </li>
         {/each}
