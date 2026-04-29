@@ -1,9 +1,18 @@
 export type Rating = 1 | 2 | 3 | 4 | 5;
 
+export type CastMember = { name: string; character: string; profile?: string };
+
+export type SimilarMovie = {
+  id: number;
+  title: string;
+  year: number;
+  poster?: string;
+};
+
 export type Movie = {
   slug: string;
   /** TMDB movie ID — when present and TMDB_API_KEY is set, build-time fetch overrides
-      title / year / director with TMDB's data and adds poster / overview / genres. */
+      title / year / director with TMDB's data and adds poster / overview / genres / etc. */
   tmdb_id?: number;
   title: string;
   year: number;
@@ -16,6 +25,11 @@ export type Movie = {
   poster?: string;
   overview?: string;
   genres?: string[];
+  tagline?: string;
+  runtime?: number;
+  original_title?: string;
+  cast?: CastMember[];
+  similar?: SimilarMovie[];
 };
 
 export const movies: Movie[] = [

@@ -29,24 +29,33 @@
       </h2>
       <ul class="grid gap-4">
         {#each byYear[year] as movie}
-          <li class="flex items-start gap-3">
-            {#if movie.poster}
-              <img
-                src={movie.poster}
-                alt=""
-                loading="lazy"
-                class="block w-12 h-auto border border-mute"
-              />
-            {/if}
-            <div class="flex-1 leading-tight">
-              <p class="font-serif-bold">{movie.title}</p>
-              <p class="text-sm font-serif-light">{movie.director} · {movie.year}</p>
-            </div>
-            {#if movie.rating}
-              <span class="self-center text-xs font-serif-light tracking-wider"
-                >{roman(movie.rating)}</span
-              >
-            {/if}
+          <li>
+            <a
+              href="/movies/{movie.slug}"
+              class="flex items-start gap-3 no-underline group"
+            >
+              {#if movie.poster}
+                <img
+                  src={movie.poster}
+                  alt=""
+                  loading="lazy"
+                  class="block w-12 h-auto border border-mute grayscale group-hover:grayscale-0 transition-[filter] duration-150"
+                />
+              {/if}
+              <div class="flex-1 leading-tight">
+                <p
+                  class="font-serif-bold group-hover:underline group-hover:decoration-wavy group-hover:underline-offset-[3px]"
+                >
+                  {movie.title}
+                </p>
+                <p class="text-sm font-serif-light">{movie.director} · {movie.year}</p>
+              </div>
+              {#if movie.rating}
+                <span class="self-center text-xs font-serif-light tracking-wider"
+                  >{roman(movie.rating)}</span
+                >
+              {/if}
+            </a>
           </li>
         {/each}
       </ul>
