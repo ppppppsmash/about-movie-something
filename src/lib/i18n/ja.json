@@ -1,0 +1,20 @@
+{
+  "nav.movies": "映画",
+  "nav.notes": "メモ",
+  "nav.about": "プロフィール",
+  "tab.watched": "鑑賞済",
+  "tab.queue": "観たい",
+  "tab.best": "ベスト",
+  "back.movies": "← 映画一覧",
+  "header.movies": "映画",
+  "section.cast": "キャスト",
+  "section.overview": "あらすじ",
+  "section.similar": "関連作",
+  "meta.rated": "評価",
+  "meta.watched": "鑑賞日",
+  "meta.runtime_unit": "分",
+  "meta.best_pick": "★ ベスト",
+  "empty.queue": "観たい映画はまだありません",
+  "empty.best": "ベストはまだ選んでいません",
+  "locale.other": "EN"
+}

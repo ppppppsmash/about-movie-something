@@ -1,5 +1,10 @@
 <script lang="ts">
+  import { page } from '$app/state';
+  import { t, resolveLocale, localePath } from '$lib/i18n';
+
   let { transitionName = false }: { transitionName?: boolean } = $props();
+
+  const locale = $derived(resolveLocale(page.params.lang));
 
   const link =
     'flex flex-1 gap-[0.4rem] text-sm uppercase no-underline transition-transform duration-100 ease-in-out hover:scale-105';
@@ -7,9 +12,9 @@
 
 <nav class="w-full py-8 font-serif-light" class:vt={transitionName} id="nav">
   <ol class="grid gap-4 [counter-reset:counter]">
-    <li class="flex [counter-increment:counter]"><a href="/movies" class={link}>Movies</a></li>
-    <li class="flex [counter-increment:counter]"><a href="/notes" class={link}>Notes</a></li>
-    <li class="flex [counter-increment:counter]"><a href="/about" class={link}>About</a></li>
+    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/movies')} class={link}>{t(locale, 'nav.movies')}</a></li>
+    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/notes')} class={link}>{t(locale, 'nav.notes')}</a></li>
+    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/about')} class={link}>{t(locale, 'nav.about')}</a></li>
   </ol>
 </nav>
 

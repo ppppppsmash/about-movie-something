@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { roman } from '$lib/data/movies';
+  import { t, resolveLocale } from '$lib/i18n';
 
   let { data } = $props();
   const m = $derived(data.movie);
+  const locale = $derived(resolveLocale(page.params.lang));
 </script>
 
 <svelte:head>
@@ -26,7 +29,7 @@
         <p class="mt-1 text-sm font-serif-italic">{m.original_title}</p>
       {/if}
       <p class="mt-3 text-sm font-serif-light">
-        {m.director} · {m.year}{#if m.runtime} · {m.runtime} min{/if}
+        {m.director} · {m.year}{#if m.runtime} · {m.runtime} {t(locale, 'meta.runtime_unit')}{/if}
       </p>
       {#if m.genres && m.genres.length}
         <p class="mt-1 text-xs font-serif-light uppercase tracking-wider">
@@ -35,13 +38,13 @@
       {/if}
       <div class="mt-4 text-sm font-serif-light space-y-1">
         {#if m.rating}
-          <p>Rated <span class="font-serif-bold tracking-wider">{roman(m.rating)}</span></p>
+          <p>{t(locale, 'meta.rated')} <span class="font-serif-bold tracking-wider">{roman(m.rating)}</span></p>
         {/if}
         {#if m.watched_on}
-          <p>Watched {m.watched_on}</p>
+          <p>{t(locale, 'meta.watched')} {m.watched_on}</p>
         {/if}
         {#if m.best}
-          <p class="text-xs uppercase tracking-wider">★ Best pick</p>
+          <p class="text-xs uppercase tracking-wider">{t(locale, 'meta.best_pick')}</p>
         {/if}
       </div>
     </div>
@@ -53,14 +56,14 @@
 
   {#if m.overview}
     <section>
-      <h3 class="font-serif-bold uppercase text-xs mb-3">Overview</h3>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.overview')}</h3>
       <p class="leading-relaxed">{m.overview}</p>
     </section>
   {/if}
 
   {#if m.cast && m.cast.length}
     <section>
-      <h3 class="font-serif-bold uppercase text-xs mb-3">Cast</h3>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.cast')}</h3>
       <ul class="grid gap-1 text-sm">
         {#each m.cast as actor}
           <li class="flex items-baseline gap-2 flex-wrap">
@@ -74,7 +77,7 @@
 
   {#if m.similar && m.similar.length}
     <section>
-      <h3 class="font-serif-bold uppercase text-xs mb-3">Similar</h3>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.similar')}</h3>
       <ul class="grid grid-cols-3 gap-3">
         {#each m.similar as s}
           <li>

@@ -1,0 +1,20 @@
+{
+  "nav.movies": "Movies",
+  "nav.notes": "Notes",
+  "nav.about": "About",
+  "tab.watched": "Watched",
+  "tab.queue": "Queue",
+  "tab.best": "Best",
+  "back.movies": "← Movies",
+  "header.movies": "MOVIES",
+  "section.cast": "Cast",
+  "section.overview": "Overview",
+  "section.similar": "Similar",
+  "meta.rated": "Rated",
+  "meta.watched": "Watched",
+  "meta.runtime_unit": "min",
+  "meta.best_pick": "★ Best pick",
+  "empty.queue": "queue is empty.",
+  "empty.best": "no picks yet.",
+  "locale.other": "日本語"
+}

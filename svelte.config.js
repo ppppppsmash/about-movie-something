@@ -13,9 +13,11 @@ const config = {
       strict: false
     }),
     prerender: {
+      // Both locale roots are explicit entry points so the crawler discovers /en/... too.
+      entries: ['*', '/en'],
       handleHttpError: ({ path, referrer, message }) => {
-        // Routes linked from the nav but not yet implemented — silence to keep the build green.
-        if (/^\/(movies|notes|about)/.test(path)) return;
+        // Routes linked from the nav but not yet implemented (both locales) — silence to keep the build green.
+        if (/^\/(en\/)?(notes|about)/.test(path)) return;
         throw new Error(`${message} (linked from ${referrer})`);
       }
     }

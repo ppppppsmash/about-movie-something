@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { roman, type Movie } from '$lib/data/movies';
+  import { t, resolveLocale, localePath } from '$lib/i18n';
 
   let { data } = $props();
 
+  const locale = $derived(resolveLocale(page.params.lang));
   const best = $derived(
     data.movies
       .filter((m: Movie) => m.best && m.status === 'watched')
@@ -15,12 +18,12 @@
 </svelte:head>
 
 {#if best.length === 0}
-  <p class="text-center text-sm font-serif-italic">no picks yet.</p>
+  <p class="text-center text-sm font-serif-italic">{t(locale, 'empty.best')}</p>
 {:else}
   <ul class="grid gap-8">
     {#each best as movie}
       <li>
-        <a href="/movies/{movie.slug}" class="flex items-start gap-4 no-underline group">
+        <a href={localePath(locale, `/movies/${movie.slug}`)} class="flex items-start gap-4 no-underline group">
           {#if movie.poster}
             <img
               src={movie.poster}

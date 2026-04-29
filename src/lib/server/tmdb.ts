@@ -1,27 +1,28 @@
 import { env } from '$env/dynamic/private';
 import { movies as raw, type Movie } from '$lib/data/movies';
+import type { Locale } from '$lib/i18n';
 
 const API_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w342';
 const PROFILE_BASE = 'https://image.tmdb.org/t/p/w185';
 
-let cache: Movie[] | null = null;
+const cache: Record<Locale, Movie[] | null> = { en: null, ja: null };
 
-/** Returns the full movie list with TMDB enrichment applied (poster / overview / genres /
- *  cast / similar / tagline / runtime / original_title).
- *  Memoized at module level so each prerendered page only triggers one round of fetches. */
-export async function getMovies(): Promise<Movie[]> {
-  if (cache) return cache;
+/** Returns the full movie list with TMDB enrichment applied for the given locale.
+ *  Memoized per-locale at module level so each prerendered page only triggers one round of fetches. */
+export async function getMovies(locale: Locale = 'en'): Promise<Movie[]> {
+  if (cache[locale]) return cache[locale]!;
 
   const key = env.TMDB_API_KEY;
   if (!key) {
     console.warn('[tmdb] TMDB_API_KEY not set — skipping enrichment, using raw data.');
-    cache = raw;
-    return cache;
+    cache[locale] = raw;
+    return cache[locale]!;
   }
 
-  cache = await Promise.all(raw.map((m) => enrichOne(m, key)));
-  return cache;
+  const language = locale === 'ja' ? 'ja-JP' : 'en-US';
+  cache[locale] = await Promise.all(raw.map((m) => enrichOne(m, key, language)));
+  return cache[locale]!;
 }
 
 type TmdbCrewMember = { job: string; name: string };
@@ -34,14 +35,14 @@ type TmdbSimilarMovie = {
   poster_path?: string | null;
 };
 
-async function enrichOne(m: Movie, key: string): Promise<Movie> {
+async function enrichOne(m: Movie, key: string, language: string): Promise<Movie> {
   if (!m.tmdb_id) return m;
 
   try {
-    const url = `${API_BASE}/movie/${m.tmdb_id}?append_to_response=credits,similar&api_key=${key}`;
+    const url = `${API_BASE}/movie/${m.tmdb_id}?append_to_response=credits,similar&language=${language}&api_key=${key}`;
     const res = await fetch(url);
     if (!res.ok) {
-      console.warn(`[tmdb] ${m.slug}: ${res.status} ${res.statusText}`);
+      console.warn(`[tmdb] ${m.slug} (${language}): ${res.status} ${res.statusText}`);
       return m;
     }
     const data = await res.json();
@@ -74,7 +75,7 @@ async function enrichOne(m: Movie, key: string): Promise<Movie> {
       similar
     };
   } catch (err) {
-    console.warn(`[tmdb] ${m.slug}: fetch failed —`, err);
+    console.warn(`[tmdb] ${m.slug} (${language}): fetch failed —`, err);
     return m;
   }
 }

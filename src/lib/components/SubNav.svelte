@@ -1,15 +1,19 @@
 <script lang="ts">
   import { page } from '$app/state';
+  import { t, resolveLocale, localePath } from '$lib/i18n';
 
-  const tabs = [
-    { href: '/movies', label: 'Watched' },
-    { href: '/movies/queue', label: 'Queue' },
-    { href: '/movies/best', label: 'Best' }
-  ];
+  const locale = $derived(resolveLocale(page.params.lang));
+
+  const tabs = $derived([
+    { href: localePath(locale, '/movies'), label: t(locale, 'tab.watched') },
+    { href: localePath(locale, '/movies/queue'), label: t(locale, 'tab.queue') },
+    { href: localePath(locale, '/movies/best'), label: t(locale, 'tab.best') }
+  ]);
 
   function isActive(href: string): boolean {
     const path = page.url.pathname;
-    if (href === '/movies') return path === '/movies';
+    const moviesPath = localePath(locale, '/movies');
+    if (href === moviesPath) return path === moviesPath;
     return path === href || path.startsWith(href + '/');
   }
 </script>

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import '../app.css';
+  import '../../app.css';
   import { onMount } from 'svelte';
   import { onNavigate } from '$app/navigation';
   import { page } from '$app/state';
@@ -8,6 +8,9 @@
   import MainNav from '$lib/components/MainNav.svelte';
 
   let { children } = $props();
+
+  // Treat both `/` (Japanese home) and `/en` (English home) as "home" for sidebar purposes.
+  const isHome = $derived(page.url.pathname === '/' || page.url.pathname === '/en');
 
   onMount(() => {
     document.body.classList.remove('no-js');
@@ -32,7 +35,7 @@
   <title>Movie Log</title>
 </svelte:head>
 
-{#if page.url.pathname !== '/'}
+{#if !isHome}
   <aside
     class="hidden min-[1024px]:block fixed right-[calc(50%_+_250px_+_8rem)] top-56 w-[120px] z-10"
   >

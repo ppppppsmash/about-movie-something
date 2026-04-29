@@ -1,8 +1,11 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import { roman, type Movie } from '$lib/data/movies';
+  import { resolveLocale, localePath } from '$lib/i18n';
 
   let { data } = $props();
 
+  const locale = $derived(resolveLocale(page.params.lang));
   const watched = $derived(data.movies.filter((m: Movie) => m.status === 'watched'));
   const byYear = $derived.by(() => {
     const m: Record<string, Movie[]> = {};
@@ -31,7 +34,7 @@
         {#each byYear[year] as movie}
           <li>
             <a
-              href="/movies/{movie.slug}"
+              href={localePath(locale, `/movies/${movie.slug}`)}
               class="flex items-start gap-3 no-underline group"
             >
               {#if movie.poster}

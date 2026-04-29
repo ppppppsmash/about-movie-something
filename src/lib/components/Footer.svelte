@@ -1,6 +1,12 @@
 <script lang="ts">
+  import { page } from '$app/state';
   import MainNav from './MainNav.svelte';
   import ModeToggle from './ModeToggle.svelte';
+  import LocaleToggle from './LocaleToggle.svelte';
+  import { resolveLocale, localePath } from '$lib/i18n';
+
+  const locale = $derived(resolveLocale(page.params.lang));
+  const homeHref = $derived(localePath(locale, '/'));
 </script>
 
 <footer class="mt-16 text-sm">
@@ -12,15 +18,16 @@
   <!-- Back to home: styled with dotted leaders on both sides, like a section divider -->
   <p class="flex py-8 font-serif-light uppercase">
     <a
-      href="/"
+      href={homeHref}
       class="dots flex flex-1 gap-[0.4rem] no-underline transition-transform duration-100 ease-in-out hover:scale-105"
     >Top</a>
   </p>
 
   <small class="block mt-12 font-serif-bold text-center">
-    <a href="/" class="no-underline hover:underline">№ XLII</a>
+    <a href={homeHref} class="no-underline hover:underline">№ XLII</a>
   </small>
   <ModeToggle />
+  <LocaleToggle />
 </footer>
 
 <style>
