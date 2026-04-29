@@ -4,7 +4,7 @@
   "nav.today": "Today",
   "nav.search": "Search",
   "header.search": "SEARCH",
-  "search.placeholder": "Search TMDB…",
+  "search.placeholder": "Search movies…",
   "search.empty": "No results.",
   "search.intro": "Find a film and mark it watched or queued.",
   "search.mark.watched": "Watched",
