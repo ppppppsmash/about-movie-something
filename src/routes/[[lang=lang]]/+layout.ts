@@ -1,6 +1,7 @@
 import { resolveLocale } from '$lib/i18n';
 
-export const prerender = true;
+// Auth.js sessions are per-request, so pages can no longer be prerendered.
+export const prerender = false;
 export const ssr = true;
 export const trailingSlash = 'never';
 

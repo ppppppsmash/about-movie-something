@@ -28,5 +28,8 @@
     "onlyBuiltDependencies": [
       "esbuild"
     ]
+  },
+  "dependencies": {
+    "@auth/sveltekit": "^1.11.2"
   }
 }

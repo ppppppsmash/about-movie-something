@@ -7,10 +7,10 @@ const config = {
   kit: {
     adapter: adapter(),
     prerender: {
-      // Both locale roots are explicit entry points so the crawler discovers /en/... too.
-      entries: ['*', '/en'],
+      // All page routes opt out of prerender (Auth.js sessions are per-request) — only the
+      // shell + assets remain static. handleHttpError still silences not-yet-implemented routes
+      // in case they get crawled.
       handleHttpError: ({ path, referrer, message }) => {
-        // Routes linked from the nav but not yet implemented (both locales) — silence to keep the build green.
         if (/^\/(en\/)?notes/.test(path)) return;
         throw new Error(`${message} (linked from ${referrer})`);
       }
