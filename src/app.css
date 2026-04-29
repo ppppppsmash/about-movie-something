@@ -1,0 +1,187 @@
+@import 'tailwindcss';
+
+/* `dark:` utilities trigger when the user has explicitly chosen dark.
+   System-preference dark is handled implicitly via `color-scheme` + `light-dark()`. */
+@custom-variant dark (&:where([data-user-color-scheme='dark'], [data-user-color-scheme='dark'] *));
+
+@theme {
+  /* Colors — values use `light-dark()` so a single utility (e.g. `bg-paper`)
+     adapts to both modes via `color-scheme` on <html>. */
+  --color-paper: light-dark(#e4e2d7, #111);
+  --color-ink: light-dark(#111, #ff3b3b);
+  --color-mute: light-dark(rgba(0, 0, 0, 0.3), rgba(255, 59, 59, 0.3));
+  --color-focus: light-dark(#ff3b3b, white);
+  --color-pre-bg: light-dark(white, #111);
+
+  /* Type scale (overrides Tailwind defaults). */
+  --text-xs: 0.85rem;
+  --text-sm: 1rem;
+  --text-base: 1.2rem;
+  --text-md: 1.5rem;
+  --text-lg: 2.3rem;
+  --text-xl: 3rem;
+  --text-2xl: 6rem;
+  --text-2xl-sm: 5.4rem; /* mobile tier of --text-2xl (= -0.6rem) */
+
+  /* Custom faces. */
+  --font-display: 'Hubano-Rough', system-ui, 'Segoe UI', Roboto, sans-serif;
+  --font-serif: 'SydoniaAtramentiquaRegular', 'Times New Roman', serif;
+  --font-serif-bold: 'SydoniaAtramentiquaBold', 'Times New Roman', serif;
+  --font-serif-light: 'SydoniaAtramentiquaLight', 'Times New Roman', serif;
+  --font-serif-italic: 'SydoniaAtramentiquaItalic', 'Times New Roman', serif;
+
+  --ease-elastic: cubic-bezier(0.175, 0.885, 0.12, 1.775);
+}
+
+@font-face {
+  font-family: 'Hubano-Rough';
+  src: url('/fonts/Hubano-Rough.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SydoniaAtramentiquaRegular';
+  src: url('/fonts/SydoniaAtramentiquaRegular.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SydoniaAtramentiquaItalic';
+  src: url('/fonts/SydoniaAtramentiquaItalic.woff2') format('woff2');
+  font-weight: 400;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SydoniaAtramentiquaLight';
+  src: url('/fonts/SydoniaAtramentiquaLight.woff2') format('woff2');
+  font-weight: 100;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SydoniaAtramentiquaBold';
+  src: url('/fonts/SydoniaAtramentiquaBold.woff2') format('woff2');
+  font-weight: 700;
+  font-display: swap;
+}
+
+/* Non-theme variables still used by markup (content padding + sun/moon SVG opacity) */
+:root {
+  --content-padding: 2rem;
+  --color-mode: 'light';
+  --toggle-sun: 1;
+  --toggle-moon: 0;
+}
+@media screen and (max-width: 499px) {
+  :root {
+    --content-padding: 1.2rem;
+  }
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-mode: 'dark';
+  }
+  :root:not([data-user-color-scheme]) {
+    --toggle-sun: 0;
+    --toggle-moon: 1;
+  }
+}
+[data-user-color-scheme='dark'] {
+  --toggle-sun: 0;
+  --toggle-moon: 1;
+}
+
+@layer base {
+  html {
+    height: 100%;
+    color-scheme: light dark;
+  }
+  html[data-user-color-scheme='light'] {
+    color-scheme: light;
+  }
+  html[data-user-color-scheme='dark'] {
+    color-scheme: dark;
+  }
+
+  body {
+    width: 100%;
+    min-height: 100%;
+    display: grid;
+    background-color: var(--color-paper);
+    background-image: url('/images/bg-pattern.jpg');
+    background-repeat: repeat;
+    background-attachment: fixed;
+    background-size: 1400px auto;
+    font-family: var(--font-serif);
+    font-size: var(--text-base);
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--color-ink);
+  }
+  @media screen and (min-width: 500px) {
+    body {
+      justify-content: center;
+    }
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-user-color-scheme]) body {
+      background-image: url('/images/bg-pattern-dark.jpg');
+    }
+  }
+  [data-user-color-scheme='dark'] body {
+    background-image: url('/images/bg-pattern-dark.jpg');
+  }
+  body.home {
+    align-items: center;
+  }
+
+  ::selection {
+    background-color: var(--color-ink);
+    color: var(--color-paper);
+    fill: var(--color-paper);
+  }
+
+  h1,
+  h2,
+  h3 {
+    text-wrap: pretty;
+  }
+
+  /* Default link styling — utilities can still override per element. */
+  a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    color: var(--color-ink);
+    font-weight: 550;
+    position: relative;
+  }
+  a:hover {
+    text-decoration-style: wavy;
+  }
+  a:focus:focus-visible {
+    outline: 4px solid var(--color-focus);
+    outline-offset: 3px;
+    background-color: var(--color-paper);
+    box-shadow:
+      0 0 0 3px var(--color-paper),
+      6px 6px 0 7px var(--color-ink);
+    text-decoration: none;
+    transition: none;
+  }
+  a:focus:not(:focus-visible) {
+    outline: none;
+  }
+  a:not(:has(figure)):active {
+    transform: translateY(1px);
+  }
+
+  button {
+    padding: 0;
+    font-family: var(--font-serif);
+    background: transparent;
+    cursor: pointer;
+  }
+  button:active {
+    transform: translateY(1px);
+  }
+}
