@@ -27,6 +27,8 @@ export type NotionMovie = {
   watched_on?: string;
   rating?: Rating;
   owner?: string;
+  note?: string;
+  note_updated?: string;
 };
 
 /** Fetch movie rows from Notion, optionally filtered by owner email. */
@@ -199,7 +201,9 @@ export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie
       best: n.best ?? base?.best,
       watched_on: n.watched_on ?? base?.watched_on,
       rating: n.rating ?? base?.rating,
-      notion_page_id: n.page_id
+      notion_page_id: n.page_id,
+      note: n.note,
+      note_updated: n.note_updated
     });
   }
 
@@ -216,10 +220,12 @@ type NotionProperty = {
   date?: { start: string } | null;
   email?: string | null;
   title?: { plain_text: string }[];
+  rich_text?: { plain_text: string }[];
 };
 
 type NotionPage = {
   id: string;
+  last_edited_time?: string;
   properties: Record<string, NotionProperty>;
 };
 
@@ -233,6 +239,8 @@ function parseNotionPage(page: unknown): NotionMovie | null {
   const status = p.status?.select?.name;
   if (status !== 'watched' && status !== 'queue') return null;
 
+  const note = (p.note?.rich_text ?? []).map((t) => t.plain_text).join('').trim();
+
   return {
     page_id: page.id,
     tmdb_id,
@@ -240,7 +248,9 @@ function parseNotionPage(page: unknown): NotionMovie | null {
     best: p.best?.checkbox ?? undefined,
     watched_on: p.watched_on?.date?.start ?? undefined,
     rating: clampRating(p.rating?.number),
-    owner: p.owner?.email ?? undefined
+    owner: p.owner?.email ?? undefined,
+    note: note || undefined,
+    note_updated: page.last_edited_time
   };
 }
 

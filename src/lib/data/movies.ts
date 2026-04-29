@@ -23,6 +23,10 @@ export type Movie = {
   rating?: Rating;
   /** Set when this movie is backed by a Notion page (used for PATCH /api/movies/[id]). */
   notion_page_id?: string;
+  /** Free-form note text (from Notion `note` Rich Text property). */
+  note?: string;
+  /** ISO timestamp of last Notion page edit — used to sort the /notes feed. */
+  note_updated?: string;
   // ----- Filled by src/lib/server/tmdb.ts at build time (do not hand-edit): -----
   poster?: string;
   overview?: string;
