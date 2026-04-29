@@ -29,6 +29,8 @@ export type NotionMovie = {
   owner?: string;
   note?: string;
   note_updated?: string;
+  /** When true, this row's note is visible to other signed-in users. */
+  public?: boolean;
 };
 
 /** Fetch movie rows from Notion, optionally filtered by owner email. */
@@ -174,6 +176,106 @@ export async function updateNotionMovie(
   }
 }
 
+/** A note entry visible to the current viewer (own row, or someone else's `public` row). */
+export type EnrichedNote = {
+  page_id: string;
+  tmdb_id: number;
+  text: string;
+  updated: string;
+  author: string;
+  is_own: boolean;
+  is_public: boolean;
+  movie: { title: string; year: number; poster?: string; slug: string };
+};
+
+/** Fetch all notes that the viewer is allowed to see (own + others' public),
+ *  enriched with TMDB metadata for each unique movie. */
+export async function getVisibleNotes(
+  viewerEmail: string,
+  locale: Locale
+): Promise<EnrichedNote[]> {
+  if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) return [];
+
+  // Primary: own + others' public. Falls back to owner-only if `public` column doesn't exist yet.
+  let rows = await queryRows({
+    or: [
+      { property: 'owner', email: { equals: viewerEmail } },
+      { property: 'public', checkbox: { equals: true } }
+    ]
+  });
+  if (rows.length === 0) {
+    rows = await queryRows({ property: 'owner', email: { equals: viewerEmail } });
+  }
+  const withNotes = rows.filter((r) => r.note);
+  if (withNotes.length === 0) return [];
+
+  // Enrich each unique tmdb_id with TMDB data once.
+  const uniqueIds = [...new Set(withNotes.map((r) => r.tmdb_id))];
+  const stubs: Movie[] = uniqueIds.map((id) => ({
+    slug: `tmdb-${id}`,
+    tmdb_id: id,
+    title: '',
+    year: 0,
+    director: '',
+    status: 'watched'
+  }));
+  const enriched = await enrichMovies(stubs, locale);
+  const byTmdbId = new Map(enriched.map((m) => [m.tmdb_id, m]));
+
+  return withNotes
+    .map((r): EnrichedNote => {
+      const m = byTmdbId.get(r.tmdb_id);
+      return {
+        page_id: r.page_id,
+        tmdb_id: r.tmdb_id,
+        text: r.note ?? '',
+        updated: r.note_updated ?? '',
+        author: r.owner ?? '',
+        is_own: r.owner === viewerEmail,
+        is_public: r.public ?? false,
+        movie: {
+          title: m?.title ?? '',
+          year: m?.year ?? 0,
+          poster: m?.poster,
+          slug: m?.slug ?? `tmdb-${r.tmdb_id}`
+        }
+      };
+    })
+    .sort((a, b) => b.updated.localeCompare(a.updated));
+}
+
+/** Run a paginated `databases/{id}/query` against the configured DB with an arbitrary filter. */
+async function queryRows(filter: unknown): Promise<NotionMovie[]> {
+  const results: NotionMovie[] = [];
+  let cursor: string | undefined = undefined;
+
+  do {
+    const body: Record<string, unknown> = { page_size: 100, filter };
+    if (cursor) body.start_cursor = cursor;
+
+    const res = await notionFetch(`/databases/${env.NOTION_DATABASE_ID}/query`, {
+      method: 'POST',
+      body: JSON.stringify(body)
+    });
+    if (!res.ok) {
+      console.warn(`[notion] query failed: ${res.status} ${res.statusText}`);
+      return results;
+    }
+    const data = (await res.json()) as {
+      results: unknown[];
+      has_more: boolean;
+      next_cursor: string | null;
+    };
+    for (const page of data.results) {
+      const m = parseNotionPage(page);
+      if (m) results.push(m);
+    }
+    cursor = data.has_more ? (data.next_cursor ?? undefined) : undefined;
+  } while (cursor);
+
+  return results;
+}
+
 /** Notion (filtered by owner) + movies.ts seed, merged + TMDB-enriched. */
 export async function getCombinedMovies(locale: Locale, owner?: string): Promise<Movie[]> {
   const notion = owner ? await getNotionMovies(owner) : [];
@@ -250,7 +352,8 @@ function parseNotionPage(page: unknown): NotionMovie | null {
     rating: clampRating(p.rating?.number),
     owner: p.owner?.email ?? undefined,
     note: note || undefined,
-    note_updated: page.last_edited_time
+    note_updated: page.last_edited_time,
+    public: p.public?.checkbox ?? undefined
   };
 }
 
