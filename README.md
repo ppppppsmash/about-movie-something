@@ -17,7 +17,7 @@ TMDB API キーは [themoviedb.org/settings/api](https://www.themoviedb.org/sett
 ```bash
 pnpm dev          # 開発サーバー (http://localhost:5173/)
 pnpm check        # 型チェック
-pnpm build        # 静的書き出し → build/ (build 時に TMDB を fetch)
+pnpm build        # Vercel 用ビルド → .vercel/output/ (build 時に TMDB を fetch)
 pnpm preview      # ビルド成果物のプレビュー
 ```
 
