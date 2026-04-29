@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import { roman } from '$lib/data/movies';
   import { t, resolveLocale } from '$lib/i18n';
+  import NoteEditor from '$lib/components/NoteEditor.svelte';
 
   let { data } = $props();
   const m = $derived(data.movie);
@@ -54,7 +55,9 @@
     <p class="font-serif-italic text-md text-center">"{m.tagline}"</p>
   {/if}
 
-  {#if m.note}
+  {#if m.notion_page_id}
+    <NoteEditor movie={m} />
+  {:else if m.note}
     <section>
       <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'notes.section')}</h3>
       <p class="leading-relaxed whitespace-pre-wrap">{m.note}</p>
