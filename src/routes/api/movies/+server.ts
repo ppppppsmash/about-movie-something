@@ -13,8 +13,11 @@ type AddMovieBody = {
   rating?: 1 | 2 | 3 | 4 | 5;
 };
 
-/** POST /api/movies — add a new movie row to Notion. Body: AddMovieBody. */
-export const POST: RequestHandler = async ({ request }) => {
+/** POST /api/movies — add a new movie row to Notion (owner = current user's email). */
+export const POST: RequestHandler = async ({ request, locals }) => {
+  const session = await locals.auth();
+  if (!session?.user?.email) error(401, 'Sign in required');
+
   let body: AddMovieBody;
   try {
     body = await request.json();
@@ -29,7 +32,7 @@ export const POST: RequestHandler = async ({ request }) => {
     error(400, "status must be 'watched' or 'queue'");
   }
 
-  const result = await addNotionMovie(body);
+  const result = await addNotionMovie({ ...body, owner: session.user.email });
   if (!result.ok) error(500, result.error);
 
   return json({ page_id: result.page_id }, { status: 201 });

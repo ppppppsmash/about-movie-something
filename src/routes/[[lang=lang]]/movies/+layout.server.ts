@@ -1,20 +1,20 @@
 import { getCombinedMovies } from '$lib/server/notion';
 import { resolveLocale } from '$lib/i18n';
+import type { LayoutServerLoad } from './$types';
 
-// Disable prerender for /movies/* — data comes from Notion at runtime so additions
-// from the search box show up immediately on the next visit.
 export const prerender = false;
 
-export async function load({
-  params,
-  depends
-}: {
-  params: { lang?: string };
-  depends: (...deps: string[]) => void;
-}) {
-  // Tag this load so the BestToggle can re-trigger it via invalidate('app:movies').
+export const load: LayoutServerLoad = async ({ params, depends, locals }) => {
+  // Tag this load so BestToggle can re-trigger it via invalidate('app:movies').
   depends('app:movies');
+
+  const session = await locals.auth();
   const locale = resolveLocale(params.lang);
-  const movies = await getCombinedMovies(locale);
+
+  // No session = no Notion data; show only seed (currently empty).
+  const movies = session?.user?.email
+    ? await getCombinedMovies(locale, session.user.email)
+    : await getCombinedMovies(locale);
+
   return { movies };
-}
+};

@@ -20,16 +20,17 @@ async function notionFetch(path: string, init: RequestInit = {}): Promise<Respon
 
 /** A movie row stored in Notion (subset of Movie — TMDB fills in the rest). */
 export type NotionMovie = {
-  page_id: string; // Notion page ID — used to PATCH/DELETE later
+  page_id: string;
   tmdb_id: number;
   status: 'watched' | 'queue';
   best?: boolean;
   watched_on?: string;
   rating?: Rating;
+  owner?: string;
 };
 
-/** Fetch all movie rows from the configured Notion database. */
-export async function getNotionMovies(): Promise<NotionMovie[]> {
+/** Fetch movie rows from Notion, optionally filtered by owner email. */
+export async function getNotionMovies(owner?: string): Promise<NotionMovie[]> {
   if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) return [];
 
   try {
@@ -39,6 +40,9 @@ export async function getNotionMovies(): Promise<NotionMovie[]> {
     do {
       const body: Record<string, unknown> = { page_size: 100 };
       if (cursor) body.start_cursor = cursor;
+      if (owner) {
+        body.filter = { property: 'owner', email: { equals: owner } };
+      }
 
       const res = await notionFetch(`/databases/${env.NOTION_DATABASE_ID}/query`, {
         method: 'POST',
@@ -69,11 +73,12 @@ export async function getNotionMovies(): Promise<NotionMovie[]> {
 
 export type AddResult = { ok: true; page_id: string } | { ok: false; error: string };
 
-/** Insert a new movie row into Notion. */
+/** Insert a new movie row into Notion. The current user's email is required as `owner`. */
 export async function addNotionMovie(m: {
   tmdb_id: number;
   title: string;
   status: 'watched' | 'queue';
+  owner: string;
   best?: boolean;
   watched_on?: string;
   rating?: Rating;
@@ -84,7 +89,8 @@ export async function addNotionMovie(m: {
   const properties: Record<string, unknown> = {
     Name: { title: [{ text: { content: m.title } }] },
     tmdb_id: { number: m.tmdb_id },
-    status: { select: { name: m.status } }
+    status: { select: { name: m.status } },
+    owner: { email: m.owner }
   };
   if (m.best !== undefined) properties.best = { checkbox: m.best };
   if (m.watched_on) properties.watched_on = { date: { start: m.watched_on } };
@@ -112,12 +118,30 @@ export async function addNotionMovie(m: {
   }
 }
 
-/** Patch an existing Notion page. Used to toggle `best`, change `status`, etc. */
+/** Patch an existing Notion page. Verifies ownership against the supplied email first. */
 export async function updateNotionMovie(
   page_id: string,
-  fields: { status?: 'watched' | 'queue'; best?: boolean; rating?: Rating; watched_on?: string }
+  fields: { status?: 'watched' | 'queue'; best?: boolean; rating?: Rating; watched_on?: string },
+  requiredOwner: string
 ): Promise<AddResult> {
   if (!env.NOTION_API_KEY) return { ok: false, error: 'NOTION_API_KEY is not set' };
+
+  // Verify ownership before mutating.
+  try {
+    const res = await notionFetch(`/pages/${page_id}`, { method: 'GET' });
+    if (!res.ok) {
+      const text = await res.text();
+      return { ok: false, error: `Notion ${res.status}: ${text}` };
+    }
+    const data = (await res.json()) as { properties?: Record<string, NotionProperty> };
+    const owner = data.properties?.owner?.email ?? null;
+    if (owner !== requiredOwner) {
+      return { ok: false, error: 'Not allowed: page belongs to a different user' };
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    return { ok: false, error: msg };
+  }
 
   const properties: Record<string, unknown> = {};
   if (fields.status) properties.status = { select: { name: fields.status } };
@@ -148,16 +172,14 @@ export async function updateNotionMovie(
   }
 }
 
-/** Notion (if configured) + movies.ts seed, merged + TMDB-enriched.
- *  Single entry point used by /movies routes — fetches fresh on every call. */
-export async function getCombinedMovies(locale: Locale): Promise<Movie[]> {
-  const notion = await getNotionMovies();
+/** Notion (filtered by owner) + movies.ts seed, merged + TMDB-enriched. */
+export async function getCombinedMovies(locale: Locale, owner?: string): Promise<Movie[]> {
+  const notion = owner ? await getNotionMovies(owner) : [];
   const merged = mergeNotionWithSeed(seed, notion);
   return enrichMovies(merged, locale);
 }
 
-/** Merge Notion entries on top of a seed list (movies.ts), deduplicated by tmdb_id.
- *  Notion takes precedence — if a tmdb_id exists in both, Notion's status/rating wins. */
+/** Merge Notion entries on top of a seed list, deduplicated by tmdb_id. */
 export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie[] {
   const byId = new Map<number, Movie>();
 
@@ -167,13 +189,11 @@ export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie
   for (const n of notion) {
     const base = byId.get(n.tmdb_id);
     byId.set(n.tmdb_id, {
-      // Defaults if no seed entry exists
       slug: base?.slug ?? `tmdb-${n.tmdb_id}`,
       title: base?.title ?? '',
       year: base?.year ?? 0,
       director: base?.director ?? '',
       ...base,
-      // Notion values override seed
       tmdb_id: n.tmdb_id,
       status: n.status,
       best: n.best ?? base?.best,
@@ -194,6 +214,7 @@ type NotionProperty = {
   select?: { name: string } | null;
   checkbox?: boolean;
   date?: { start: string } | null;
+  email?: string | null;
   title?: { plain_text: string }[];
 };
 
@@ -218,7 +239,8 @@ function parseNotionPage(page: unknown): NotionMovie | null {
     status,
     best: p.best?.checkbox ?? undefined,
     watched_on: p.watched_on?.date?.start ?? undefined,
-    rating: clampRating(p.rating?.number)
+    rating: clampRating(p.rating?.number),
+    owner: p.owner?.email ?? undefined
   };
 }
 
