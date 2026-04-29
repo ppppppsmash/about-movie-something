@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import PageHeader from '$lib/components/PageHeader.svelte';
   import Footer from '$lib/components/Footer.svelte';
+  import MovieSearch from '$lib/components/MovieSearch.svelte';
   import { resolveLocale, t } from '$lib/i18n';
 
   let { data } = $props();
@@ -14,7 +15,11 @@
   <title>Today — Movie Log</title>
 </svelte:head>
 
-<PageHeader chapter="IV" title={t(locale, 'header.today')} />
+<PageHeader chapter="III" title={t(locale, 'header.today')} />
+
+<div class="mb-12">
+  <MovieSearch />
+</div>
 
 <main id="content">
   <p class="mb-12 text-center text-sm font-serif-italic">{t(locale, 'today.subtitle')}</p>

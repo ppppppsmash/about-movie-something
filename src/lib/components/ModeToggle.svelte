@@ -2,7 +2,7 @@
   import { colorScheme } from '$lib/stores/colorScheme.svelte';
 </script>
 
-<div class="mt-[0.5em] grid place-content-center [.no-js_&]:hidden">
+<div class="grid place-content-center [.no-js_&]:hidden">
   <button
     class="flex items-center p-0 bg-transparent border-none cursor-pointer active:translate-y-px focus-visible:outline-none focus-visible:rounded-full"
     type="button"

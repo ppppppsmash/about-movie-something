@@ -16,6 +16,6 @@
   });
 </script>
 
-<small class="block mt-4 text-center font-serif-light text-xs uppercase">
+<small class="font-serif-light text-xs uppercase">
   <a href={otherHref} class="no-underline hover:underline">{t(currentLocale, 'locale.other')}</a>
 </small>

@@ -3,6 +3,7 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import SubNav from '$lib/components/SubNav.svelte';
   import Footer from '$lib/components/Footer.svelte';
+  import MovieSearch from '$lib/components/MovieSearch.svelte';
   import { t, resolveLocale, localePath } from '$lib/i18n';
 
   let { children } = $props();
@@ -19,6 +20,10 @@
 </script>
 
 <PageHeader chapter="I" title={t(locale, 'header.movies')} />
+
+<div class="mb-12">
+  <MovieSearch />
+</div>
 
 <main id="content">
   {#if isList}

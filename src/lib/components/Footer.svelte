@@ -23,11 +23,10 @@
     >Top</a>
   </p>
 
-  <small class="block mt-12 font-serif-bold text-center">
-    <a href={homeHref} class="no-underline hover:underline">№ XLII</a>
-  </small>
-  <ModeToggle />
-  <LocaleToggle />
+  <div class="mt-8 flex justify-center items-center gap-6">
+    <ModeToggle />
+    <LocaleToggle />
+  </div>
 </footer>
 
 <style>
