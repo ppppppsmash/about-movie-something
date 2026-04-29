@@ -4,12 +4,13 @@
   import ModeToggle from '$lib/components/ModeToggle.svelte';
 </script>
 
-<Header />
-
-<main id="content">
-  <MainNav />
-  <small class="block mt-12 font-serif-bold text-center">
-    <a href="/" class="no-underline hover:underline">№ XLII</a>
-  </small>
-  <ModeToggle />
-</main>
+<div class="min-h-[calc(100dvh_-_var(--content-padding)_*_2)] grid content-center">
+  <Header />
+  <main id="content">
+    <MainNav />
+    <small class="block mt-12 font-serif-bold text-center">
+      <a href="/" class="no-underline hover:underline">№ XLII</a>
+    </small>
+    <ModeToggle />
+  </main>
+</div>

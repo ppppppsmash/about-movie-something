@@ -130,9 +130,6 @@
   [data-user-color-scheme='dark'] body {
     background-image: url('/images/bg-pattern-dark.jpg');
   }
-  body.home {
-    align-items: center;
-  }
 
   ::selection {
     background-color: var(--color-ink);
