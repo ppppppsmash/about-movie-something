@@ -30,5 +30,8 @@
   "meta.best_pick": "★ Best pick",
   "empty.queue": "queue is empty.",
   "empty.best": "no picks yet.",
-  "locale.other": "日本語"
+  "locale.other": "日本語",
+  "auth.signin": "Sign in",
+  "auth.signout": "Sign out",
+  "auth.required": "Sign in to add movies."
 }

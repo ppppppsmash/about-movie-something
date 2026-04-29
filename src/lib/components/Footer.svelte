@@ -3,6 +3,7 @@
   import MainNav from './MainNav.svelte';
   import ModeToggle from './ModeToggle.svelte';
   import LocaleToggle from './LocaleToggle.svelte';
+  import AuthControl from './AuthControl.svelte';
   import { resolveLocale, localePath } from '$lib/i18n';
 
   const locale = $derived(resolveLocale(page.params.lang));
@@ -24,6 +25,7 @@
   </p>
 
   <div class="mt-8 flex justify-center items-center gap-6">
+    <AuthControl />
     <ModeToggle />
     <LocaleToggle />
   </div>

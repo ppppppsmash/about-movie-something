@@ -3,6 +3,7 @@
   import MainNav from '$lib/components/MainNav.svelte';
   import ModeToggle from '$lib/components/ModeToggle.svelte';
   import LocaleToggle from '$lib/components/LocaleToggle.svelte';
+  import AuthControl from '$lib/components/AuthControl.svelte';
   import MovieSearch from '$lib/components/MovieSearch.svelte';
 </script>
 
@@ -14,6 +15,7 @@
     </div>
     <MainNav transitionName />
     <div class="mt-8 flex justify-center items-center gap-6">
+      <AuthControl />
       <ModeToggle />
       <LocaleToggle />
     </div>

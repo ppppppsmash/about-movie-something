@@ -30,5 +30,8 @@
   "meta.best_pick": "★ ベスト",
   "empty.queue": "観たい映画はまだありません",
   "empty.best": "ベストはまだ選んでいません",
-  "locale.other": "EN"
+  "locale.other": "EN",
+  "auth.signin": "ログイン",
+  "auth.signout": "ログアウト",
+  "auth.required": "ログインが必要です"
 }

@@ -3,6 +3,7 @@
   import { resolveLocale, t } from '$lib/i18n';
 
   const locale = $derived(resolveLocale(page.params.lang));
+  const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
 
   type SearchResult = {
     tmdb_id: number;
@@ -106,6 +107,10 @@
                 <span class="font-serif-light">…</span>
               {:else if state === 'error'}
                 <span class="font-serif-light">{t(locale, 'search.error')}</span>
+              {:else if !isSignedIn}
+                <span class="font-serif-italic normal-case text-mute"
+                  >{t(locale, 'auth.required')}</span
+                >
               {:else}
                 <button
                   type="button"
