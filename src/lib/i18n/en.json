@@ -9,6 +9,7 @@
   "search.intro": "Find a film and mark it watched or queued.",
   "search.mark.watched": "Watched",
   "search.mark.queue": "Queue",
+  "search.mark.best": "Best",
   "search.added": "Added",
   "search.error": "Failed to add. Try again.",
   "home.subtitle": "my movie site",

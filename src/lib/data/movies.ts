@@ -21,6 +21,8 @@ export type Movie = {
   best?: boolean;
   watched_on?: string; // ISO date (YYYY-MM-DD)
   rating?: Rating;
+  /** Set when this movie is backed by a Notion page (used for PATCH /api/movies/[id]). */
+  notion_page_id?: string;
   // ----- Filled by src/lib/server/tmdb.ts at build time (do not hand-edit): -----
   poster?: string;
   overview?: string;

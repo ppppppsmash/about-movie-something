@@ -15,7 +15,7 @@
   let q = $state('');
   let results = $state<SearchResult[]>([]);
   let loading = $state(false);
-  let marks = $state<Record<number, 'watched' | 'queue' | 'error' | 'pending'>>({});
+  let marks = $state<Record<number, 'watched' | 'queue' | 'best' | 'error' | 'pending'>>({});
 
   let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -41,17 +41,17 @@
     runSearch(q);
   });
 
-  async function mark(r: SearchResult, status: 'watched' | 'queue') {
+  async function mark(r: SearchResult, action: 'watched' | 'queue' | 'best') {
     marks = { ...marks, [r.tmdb_id]: 'pending' };
     try {
+      const body =
+        action === 'best'
+          ? { tmdb_id: r.tmdb_id, title: r.title, status: 'watched', best: true }
+          : { tmdb_id: r.tmdb_id, title: r.title, status: action };
       const res = await fetch('/api/movies', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({
-          tmdb_id: r.tmdb_id,
-          title: r.title,
-          status
-        })
+        body: JSON.stringify(body)
       });
       if (!res.ok) {
         const errBody = await res.json().catch(() => ({}));
@@ -59,7 +59,7 @@
         console.error('[search] mark failed:', msg);
         throw new Error(msg);
       }
-      marks = { ...marks, [r.tmdb_id]: status };
+      marks = { ...marks, [r.tmdb_id]: action };
     } catch {
       marks = { ...marks, [r.tmdb_id]: 'error' };
     }
@@ -100,7 +100,7 @@
               <p class="mt-1 text-sm font-serif-light line-clamp-2">{r.overview}</p>
             {/if}
             <div class="mt-2 flex gap-3 text-xs uppercase">
-              {#if state === 'watched' || state === 'queue'}
+              {#if state === 'watched' || state === 'queue' || state === 'best'}
                 <span class="font-serif-light">✓ {t(locale, 'search.added')}</span>
               {:else if state === 'pending'}
                 <span class="font-serif-light">…</span>
@@ -120,6 +120,13 @@
                   onclick={() => mark(r, 'queue')}
                 >
                   {t(locale, 'search.mark.queue')}
+                </button>
+                <button
+                  type="button"
+                  class="font-serif-light no-underline hover:underline"
+                  onclick={() => mark(r, 'best')}
+                >
+                  {t(locale, 'search.mark.best')}
                 </button>
               {/if}
             </div>

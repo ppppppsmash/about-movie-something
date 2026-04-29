@@ -112,6 +112,42 @@ export async function addNotionMovie(m: {
   }
 }
 
+/** Patch an existing Notion page. Used to toggle `best`, change `status`, etc. */
+export async function updateNotionMovie(
+  page_id: string,
+  fields: { status?: 'watched' | 'queue'; best?: boolean; rating?: Rating; watched_on?: string }
+): Promise<AddResult> {
+  if (!env.NOTION_API_KEY) return { ok: false, error: 'NOTION_API_KEY is not set' };
+
+  const properties: Record<string, unknown> = {};
+  if (fields.status) properties.status = { select: { name: fields.status } };
+  if (fields.best !== undefined) properties.best = { checkbox: fields.best };
+  if (fields.rating !== undefined) properties.rating = { number: fields.rating };
+  if (fields.watched_on !== undefined)
+    properties.watched_on = fields.watched_on ? { date: { start: fields.watched_on } } : null;
+
+  if (Object.keys(properties).length === 0) {
+    return { ok: false, error: 'No editable fields supplied' };
+  }
+
+  try {
+    const res = await notionFetch(`/pages/${page_id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ properties })
+    });
+    if (!res.ok) {
+      const text = await res.text();
+      console.warn(`[notion] update failed: ${res.status} — ${text}`);
+      return { ok: false, error: `Notion ${res.status}: ${text}` };
+    }
+    return { ok: true, page_id };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    console.warn('[notion] update failed —', err);
+    return { ok: false, error: msg };
+  }
+}
+
 /** Notion (if configured) + movies.ts seed, merged + TMDB-enriched.
  *  Single entry point used by /movies routes — fetches fresh on every call. */
 export async function getCombinedMovies(locale: Locale): Promise<Movie[]> {
@@ -142,7 +178,8 @@ export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie
       status: n.status,
       best: n.best ?? base?.best,
       watched_on: n.watched_on ?? base?.watched_on,
-      rating: n.rating ?? base?.rating
+      rating: n.rating ?? base?.rating,
+      notion_page_id: n.page_id
     });
   }
 

@@ -2,6 +2,7 @@
   import { page } from '$app/state';
   import { roman, type Movie } from '$lib/data/movies';
   import { t, resolveLocale, localePath } from '$lib/i18n';
+  import BestToggle from '$lib/components/BestToggle.svelte';
 
   let { data } = $props();
 
@@ -22,8 +23,8 @@
 {:else}
   <ul class="grid gap-8">
     {#each best as movie}
-      <li>
-        <a href={localePath(locale, `/movies/${movie.slug}`)} class="flex items-start gap-4 no-underline group">
+      <li class="flex items-start gap-4">
+        <a href={localePath(locale, `/movies/${movie.slug}`)} class="flex-1 flex items-start gap-4 no-underline group">
           {#if movie.poster}
             <img
               src={movie.poster}
@@ -49,6 +50,7 @@
             {/if}
           </div>
         </a>
+        <BestToggle {movie} />
       </li>
     {/each}
   </ul>
