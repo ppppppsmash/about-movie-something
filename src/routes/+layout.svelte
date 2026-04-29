@@ -1,8 +1,11 @@
 <script lang="ts">
   import '../app.css';
   import { onMount } from 'svelte';
+  import { onNavigate } from '$app/navigation';
+  import { page } from '$app/state';
   import { elasticScale } from '$lib/actions/elasticScale';
   import { colorScheme } from '$lib/stores/colorScheme.svelte';
+  import MainNav from '$lib/components/MainNav.svelte';
 
   let { children } = $props();
 
@@ -10,11 +13,32 @@
     document.body.classList.remove('no-js');
     colorScheme.init();
   });
+
+  onNavigate((navigation) => {
+    if (typeof document === 'undefined') return;
+    if (typeof document.startViewTransition !== 'function') return;
+    if (window.matchMedia('(max-width: 1023px)').matches) return;
+
+    return new Promise((resolve) => {
+      document.startViewTransition(async () => {
+        resolve();
+        await navigation.complete;
+      });
+    });
+  });
 </script>
 
 <svelte:head>
   <title>Movie Log</title>
 </svelte:head>
+
+{#if page.url.pathname !== '/'}
+  <aside
+    class="hidden min-[1024px]:block fixed right-[calc(50%_+_250px_+_8rem)] top-56 w-[120px] z-10"
+  >
+    <MainNav transitionName />
+  </aside>
+{/if}
 
 <div
   class="m-[var(--content-padding)] w-[calc(100%_-_var(--content-padding)_*_2)] min-[500px]:w-[calc(500px_-_var(--content-padding)_*_2)] transition-transform duration-100 ease-elastic"

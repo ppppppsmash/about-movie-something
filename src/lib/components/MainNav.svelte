@@ -1,9 +1,11 @@
 <script lang="ts">
+  let { transitionName = false }: { transitionName?: boolean } = $props();
+
   const link =
     'flex flex-1 gap-[0.4rem] text-sm uppercase no-underline transition-transform duration-100 ease-in-out hover:scale-105';
 </script>
 
-<nav class="w-full py-8 font-serif-light" id="nav">
+<nav class="w-full py-8 font-serif-light" class:vt={transitionName} id="nav">
   <ol class="grid gap-4 [counter-reset:counter]">
     <li class="flex [counter-increment:counter]"><a href="/movies" class={link}>Movies</a></li>
     <li class="flex [counter-increment:counter]"><a href="/notes" class={link}>Notes</a></li>
@@ -12,6 +14,12 @@
 </nav>
 
 <style>
+  /* Opt-in view-transition-name for cross-route morph (set only when this nav is the
+     "primary" instance — avoids duplicate names when a fallback MainNav is also in DOM) */
+  .vt {
+    view-transition-name: main-nav;
+  }
+
   /* CSS counters + dotted leader — not naturally expressible as utilities */
   a::before {
     content: '';
