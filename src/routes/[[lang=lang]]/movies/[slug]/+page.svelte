@@ -54,6 +54,13 @@
     <p class="font-serif-italic text-md text-center">"{m.tagline}"</p>
   {/if}
 
+  {#if m.note}
+    <section>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'notes.section')}</h3>
+      <p class="leading-relaxed whitespace-pre-wrap">{m.note}</p>
+    </section>
+  {/if}
+
   {#if m.overview}
     <section>
       <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.overview')}</h3>
