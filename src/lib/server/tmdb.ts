@@ -6,23 +6,25 @@ const API_BASE = 'https://api.themoviedb.org/3';
 const IMG_BASE = 'https://image.tmdb.org/t/p/w342';
 const PROFILE_BASE = 'https://image.tmdb.org/t/p/w185';
 
-const cache: Record<Locale, Movie[] | null> = { en: null, ja: null };
-
-/** Returns the full movie list with TMDB enrichment applied for the given locale.
- *  Memoized per-locale at module level so each prerendered page only triggers one round of fetches. */
-export async function getMovies(locale: Locale = 'en'): Promise<Movie[]> {
-  if (cache[locale]) return cache[locale]!;
-
+/** Enrich an arbitrary list of movies with TMDB metadata for the given locale.
+ *  No caching — caller should cache if needed. Falls back to input if API key missing. */
+export async function enrichMovies(movies: Movie[], locale: Locale): Promise<Movie[]> {
   const key = env.TMDB_API_KEY;
   if (!key) {
-    console.warn('[tmdb] TMDB_API_KEY not set — skipping enrichment, using raw data.');
-    cache[locale] = raw;
-    return cache[locale]!;
+    console.warn('[tmdb] TMDB_API_KEY not set — skipping enrichment.');
+    return movies;
   }
-
   const language = locale === 'ja' ? 'ja-JP' : 'en-US';
-  cache[locale] = await Promise.all(raw.map((m) => enrichOne(m, key, language)));
-  return cache[locale]!;
+  return Promise.all(movies.map((m) => enrichOne(m, key, language)));
+}
+
+const seedCache: Record<Locale, Movie[] | null> = { en: null, ja: null };
+
+/** Returns the seed movie list (movies.ts) with TMDB enrichment, memoized per-locale. */
+export async function getMovies(locale: Locale = 'en'): Promise<Movie[]> {
+  if (seedCache[locale]) return seedCache[locale]!;
+  seedCache[locale] = await enrichMovies(raw, locale);
+  return seedCache[locale]!;
 }
 
 type TmdbCrewMember = { job: string; name: string };
@@ -173,4 +175,42 @@ function seededRandom(seed: string): () => number {
     h = (Math.imul(h, 1103515245) + 12345) | 0;
     return (h >>> 0) / 0x100000000;
   };
+}
+
+// ─── TMDB search (server-side proxy for /api/search) ─────────────────────
+
+export type SearchResult = {
+  tmdb_id: number;
+  title: string;
+  year: number;
+  overview?: string;
+  poster?: string;
+};
+
+/** Search TMDB by query string, returns up to `count` matching movies. */
+export async function searchMovies(
+  query: string,
+  locale: Locale = 'ja',
+  count = 20
+): Promise<SearchResult[]> {
+  const key = env.TMDB_API_KEY;
+  if (!key || !query.trim()) return [];
+
+  const language = locale === 'ja' ? 'ja-JP' : 'en-US';
+  try {
+    const url = `${API_BASE}/search/movie?query=${encodeURIComponent(query)}&language=${language}&api_key=${key}`;
+    const res = await fetch(url);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return (data.results ?? []).slice(0, count).map((m: TmdbListResult) => ({
+      tmdb_id: m.id,
+      title: m.title || m.original_title || '',
+      year: m.release_date ? Number(m.release_date.slice(0, 4)) : 0,
+      overview: m.overview || undefined,
+      poster: m.poster_path ? `${IMG_BASE}${m.poster_path}` : undefined
+    }));
+  } catch (err) {
+    console.warn('[tmdb] search failed —', err);
+    return [];
+  }
 }

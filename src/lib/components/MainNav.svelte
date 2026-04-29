@@ -13,8 +13,8 @@
 <nav class="w-full py-8 font-serif-light" class:vt={transitionName} id="nav">
   <ol class="grid gap-4 [counter-reset:counter]">
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/movies')} class={link}>{t(locale, 'nav.movies')}</a></li>
+    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/search')} class={link}>{t(locale, 'nav.search')}</a></li>
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/notes')} class={link}>{t(locale, 'nav.notes')}</a></li>
-    <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/about')} class={link}>{t(locale, 'nav.about')}</a></li>
     <li class="flex [counter-increment:counter]"><a href={localePath(locale, '/today')} class={link}>{t(locale, 'nav.today')}</a></li>
   </ol>
 </nav>

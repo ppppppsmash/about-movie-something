@@ -11,7 +11,7 @@ const config = {
       entries: ['*', '/en'],
       handleHttpError: ({ path, referrer, message }) => {
         // Routes linked from the nav but not yet implemented (both locales) — silence to keep the build green.
-        if (/^\/(en\/)?(notes|about)/.test(path)) return;
+        if (/^\/(en\/)?notes/.test(path)) return;
         throw new Error(`${message} (linked from ${referrer})`);
       }
     }
