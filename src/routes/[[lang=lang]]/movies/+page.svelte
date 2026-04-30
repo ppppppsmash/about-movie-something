@@ -1,12 +1,13 @@
 <script lang="ts">
   import { page } from '$app/state';
   import type { Movie } from '$lib/data/movies';
-  import { resolveLocale, localePath } from '$lib/i18n';
+  import { resolveLocale, localePath, t } from '$lib/i18n';
   import BestToggle from '$lib/components/BestToggle.svelte';
 
   let { data } = $props();
 
   const locale = $derived(resolveLocale(page.params.lang));
+  const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
   const watched = $derived(data.movies.filter((m: Movie) => m.status === 'watched'));
   const byYear = $derived.by(() => {
     const m: Record<string, Movie[]> = {};
@@ -23,6 +24,11 @@
   <title>Movies · Watched — Movie Log</title>
 </svelte:head>
 
+{#if !isSignedIn}
+  <p class="text-center text-sm font-serif-italic">{t(locale, 'auth.signin_to_start')}</p>
+{:else if watched.length === 0}
+  <p class="text-center text-sm font-serif-italic">{t(locale, 'empty.watched')}</p>
+{:else}
 <div class="grid gap-10">
   {#each years as year}
     <section>
@@ -62,3 +68,4 @@
     </section>
   {/each}
 </div>
+{/if}

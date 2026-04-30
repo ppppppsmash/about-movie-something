@@ -7,6 +7,7 @@
   let { data } = $props();
 
   const locale = $derived(resolveLocale(page.params.lang));
+  const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
   const best = $derived(
     data.movies
       .filter((m: Movie) => m.best && m.status === 'watched')
@@ -18,7 +19,9 @@
   <title>Movies · Best — Movie Log</title>
 </svelte:head>
 
-{#if best.length === 0}
+{#if !isSignedIn}
+  <p class="text-center text-sm font-serif-italic">{t(locale, 'auth.signin_to_start')}</p>
+{:else if best.length === 0}
   <p class="text-center text-sm font-serif-italic">{t(locale, 'empty.best')}</p>
 {:else}
   <ul class="grid gap-8">

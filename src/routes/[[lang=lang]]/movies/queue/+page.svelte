@@ -6,6 +6,7 @@
   let { data } = $props();
 
   const locale = $derived(resolveLocale(page.params.lang));
+  const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
   const queue = $derived(data.movies.filter((m: Movie) => m.status === 'queue'));
 </script>
 
@@ -13,7 +14,9 @@
   <title>Movies · Queue — Movie Log</title>
 </svelte:head>
 
-{#if queue.length === 0}
+{#if !isSignedIn}
+  <p class="text-center text-sm font-serif-italic">{t(locale, 'auth.signin_to_start')}</p>
+{:else if queue.length === 0}
   <p class="text-center text-sm font-serif-italic">{t(locale, 'empty.queue')}</p>
 {:else}
   <ul class="grid gap-4">
