@@ -293,6 +293,39 @@ export async function getCombinedMovies(locale: Locale, owner?: string): Promise
   return enrichMovies(merged, locale);
 }
 
+/** Distinct owner emails appearing on at least one `public` row.
+ *  Used to enumerate user profiles browseable under `/u/[handle]`. */
+export async function listPublicOwners(): Promise<string[]> {
+  if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) return [];
+  const rows = await queryRows({ property: 'public', checkbox: { equals: true } });
+  const owners = new Set<string>();
+  for (const r of rows) if (r.owner) owners.add(r.owner);
+  return [...owners].sort();
+}
+
+/** Movies for a specific owner that `viewer` is allowed to see.
+ *  - viewer === owner → all of owner's rows
+ *  - viewer !== owner → only owner's `public` rows */
+export async function getOwnerVisibleMovies(
+  locale: Locale,
+  viewerEmail: string,
+  ownerEmail: string
+): Promise<Movie[]> {
+  if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) return [];
+  const filter =
+    viewerEmail === ownerEmail
+      ? { property: 'owner', email: { equals: ownerEmail } }
+      : {
+          and: [
+            { property: 'owner', email: { equals: ownerEmail } },
+            { property: 'public', checkbox: { equals: true } }
+          ]
+        };
+  const rows = await queryRows(filter);
+  const merged = mergeNotionWithSeed(seed, rows);
+  return enrichMovies(merged, locale);
+}
+
 /** Movies the viewer is allowed to see: own rows + others' `public` rows.
  *  When the same tmdb_id exists in both, the viewer's own row wins. */
 export async function getVisibleMovies(locale: Locale, viewerEmail: string): Promise<Movie[]> {
