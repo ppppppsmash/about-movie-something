@@ -7,11 +7,12 @@
 @theme {
   /* Colors — values use `light-dark()` so a single utility (e.g. `bg-paper`)
      adapts to both modes via `color-scheme` on <html>. */
-  --color-paper: light-dark(#e4e2d7, #111);
-  --color-ink: light-dark(#111, #ff3b3b);
-  --color-mute: light-dark(rgba(0, 0, 0, 0.3), rgba(255, 59, 59, 0.3));
-  --color-focus: light-dark(#ff3b3b, white);
-  --color-pre-bg: light-dark(white, #111);
+  /* Theme: Vintage Film — sepia paper, dark coffee ink, warm orange accent. */
+  --color-paper: light-dark(#ede5d3, #1a1410);
+  --color-ink: light-dark(#2a1f12, #e8d5b7);
+  --color-mute: light-dark(rgba(42, 31, 18, 0.35), rgba(232, 213, 183, 0.35));
+  --color-focus: light-dark(#9c5a2c, #d68b3e);
+  --color-pre-bg: light-dark(#f7f1e3, #0f0c09);
 
   /* Type scale (overrides Tailwind defaults). */
   --text-xs: 0.85rem;
