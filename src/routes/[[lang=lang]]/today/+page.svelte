@@ -3,7 +3,7 @@
   import PageHeader from '$lib/components/PageHeader.svelte';
   import Footer from '$lib/components/Footer.svelte';
   import MovieSearch from '$lib/components/MovieSearch.svelte';
-  import { resolveLocale, t } from '$lib/i18n';
+  import { resolveLocale, t, localePath } from '$lib/i18n';
 
   let { data } = $props();
 
@@ -50,6 +50,17 @@
         </li>
       {/each}
     </ul>
+  {/if}
+
+  {#if movies.length > 0}
+    <p class="mt-12 text-right text-sm">
+      <a
+        href={localePath(locale, '/today/share')}
+        class="font-serif-italic no-underline hover:underline"
+      >
+        {t(locale, 'today.share')}
+      </a>
+    </p>
   {/if}
 </main>
 
