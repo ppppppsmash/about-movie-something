@@ -26,6 +26,10 @@
           localStorage.getItem('user-color-scheme')
         );
       }
+      var __t = localStorage.getItem('user-theme');
+      if (__t && __t !== 'noir') {
+        document.documentElement.setAttribute('data-theme', __t);
+      }
     </script>
     %sveltekit.head%
   </head>

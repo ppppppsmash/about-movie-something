@@ -56,5 +56,8 @@
   "locale.other": "日本語",
   "auth.signin": "Sign in",
   "auth.signout": "Sign out",
+  "theme.noir": "Noir",
+  "theme.vintage": "Vintage",
+  "theme.original": "Original",
   "auth.required": "Sign in to add movies."
 }

@@ -56,5 +56,8 @@
   "locale.other": "EN",
   "auth.signin": "ログイン",
   "auth.signout": "ログアウト",
+  "theme.noir": "ノワール",
+  "theme.vintage": "ヴィンテージ",
+  "theme.original": "オリジナル",
   "auth.required": "ログインが必要です"
 }

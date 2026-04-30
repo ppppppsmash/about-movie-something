@@ -4,6 +4,7 @@
   import { page } from '$app/state';
   import { elasticScale } from '$lib/actions/elasticScale';
   import { colorScheme } from '$lib/stores/colorScheme.svelte';
+  import { theme } from '$lib/stores/theme.svelte';
   import MainNav from '$lib/components/MainNav.svelte';
 
   let { children } = $props();
@@ -14,6 +15,7 @@
   onMount(() => {
     document.body.classList.remove('no-js');
     colorScheme.init();
+    theme.init();
   });
 
   onNavigate((navigation) => {
