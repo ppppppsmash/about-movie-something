@@ -101,19 +101,29 @@ type TmdbListResult = {
   poster_path?: string | null;
 };
 
-const dailyCache: Record<Locale, PickedMovie[] | null> = { en: null, ja: null };
+const dailyCache: Record<Locale, { date: string; picks: PickedMovie[] } | null> = {
+  en: null,
+  ja: null
+};
+
+/** JST (UTC+9) date as YYYY-MM-DD — picks roll over at JST midnight. */
+function jstDateKey(): string {
+  return new Date(Date.now() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
+}
 
 /** Fetches a top-rated pool from TMDB and returns `count` movies, deterministically
- *  shuffled by today's UTC date (YYYY-MM-DD). Same date → same picks across rebuilds. */
+ *  shuffled by today's JST date (YYYY-MM-DD). Cached per-process until the date rolls over. */
 export async function getDailyPicks(
   locale: Locale = 'ja',
   count = 5
 ): Promise<PickedMovie[]> {
-  if (dailyCache[locale]) return dailyCache[locale]!.slice(0, count);
+  const today = jstDateKey();
+  const cached = dailyCache[locale];
+  if (cached && cached.date === today) return cached.picks.slice(0, count);
 
   const key = env.TMDB_API_KEY;
   if (!key) {
-    dailyCache[locale] = [];
+    dailyCache[locale] = { date: today, picks: [] };
     return [];
   }
 
@@ -142,13 +152,12 @@ export async function getDailyPicks(
     }
   } catch (err) {
     console.warn(`[tmdb] top_rated (${language}): fetch failed —`, err);
-    dailyCache[locale] = [];
+    dailyCache[locale] = { date: today, picks: [] };
     return [];
   }
 
-  const seed = new Date().toISOString().slice(0, 10); // UTC YYYY-MM-DD
-  const picks = pickRandom(pool, count, seed);
-  dailyCache[locale] = picks;
+  const picks = pickRandom(pool, count, today);
+  dailyCache[locale] = { date: today, picks };
   return picks;
 }
 
