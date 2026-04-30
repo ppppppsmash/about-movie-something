@@ -293,6 +293,25 @@ export async function getCombinedMovies(locale: Locale, owner?: string): Promise
   return enrichMovies(merged, locale);
 }
 
+/** Movies the viewer is allowed to see: own rows + others' `public` rows.
+ *  When the same tmdb_id exists in both, the viewer's own row wins. */
+export async function getVisibleMovies(locale: Locale, viewerEmail: string): Promise<Movie[]> {
+  if (!env.NOTION_API_KEY || !env.NOTION_DATABASE_ID) return [];
+  let rows = await queryRows({
+    or: [
+      { property: 'owner', email: { equals: viewerEmail } },
+      { property: 'public', checkbox: { equals: true } }
+    ]
+  });
+  if (rows.length === 0) {
+    rows = await queryRows({ property: 'owner', email: { equals: viewerEmail } });
+  }
+  // Sort viewer-owned rows last so they overwrite public ones during merge dedupe.
+  rows.sort((a, b) => Number(a.owner === viewerEmail) - Number(b.owner === viewerEmail));
+  const merged = mergeNotionWithSeed(seed, rows);
+  return enrichMovies(merged, locale);
+}
+
 /** Merge Notion entries on top of a seed list, deduplicated by tmdb_id. */
 export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie[] {
   const byId = new Map<number, Movie>();
