@@ -36,12 +36,28 @@ type TmdbSimilarMovie = {
   release_date?: string;
   poster_path?: string | null;
 };
+type TmdbVideo = {
+  key: string;
+  site: string;
+  type: string;
+  official?: boolean;
+  published_at?: string;
+};
+
+/** Pick the earliest published YouTube "Trailer" from a TMDB videos result list. */
+function pickOldestTrailer(videos: TmdbVideo[]): { site: 'YouTube'; key: string } | undefined {
+  const trailers = videos
+    .filter((v) => v.site === 'YouTube' && v.type === 'Trailer')
+    .sort((a, b) => (a.published_at ?? '').localeCompare(b.published_at ?? ''));
+  if (trailers.length === 0) return undefined;
+  return { site: 'YouTube', key: trailers[0].key };
+}
 
 async function enrichOne(m: Movie, key: string, language: string): Promise<Movie> {
   if (!m.tmdb_id) return m;
 
   try {
-    const url = `${API_BASE}/movie/${m.tmdb_id}?append_to_response=credits,similar&language=${language}&api_key=${key}`;
+    const url = `${API_BASE}/movie/${m.tmdb_id}?append_to_response=credits,similar,videos&language=${language}&api_key=${key}`;
     const res = await fetch(url);
     if (!res.ok) {
       console.warn(`[tmdb] ${m.slug} (${language}): ${res.status} ${res.statusText}`);
@@ -62,6 +78,22 @@ async function enrichOne(m: Movie, key: string, language: string): Promise<Movie
       poster: s.poster_path ? `${IMG_BASE}${s.poster_path}` : undefined
     }));
 
+    let trailer = pickOldestTrailer((data.videos?.results ?? []) as TmdbVideo[]);
+    // ja-JP often returns zero videos — fall back to en-US for trailer discovery.
+    if (!trailer && language === 'ja-JP') {
+      try {
+        const fbRes = await fetch(
+          `${API_BASE}/movie/${m.tmdb_id}/videos?language=en-US&api_key=${key}`
+        );
+        if (fbRes.ok) {
+          const fb = (await fbRes.json()) as { results?: TmdbVideo[] };
+          trailer = pickOldestTrailer(fb.results ?? []);
+        }
+      } catch {
+        // best-effort; trailer stays undefined
+      }
+    }
+
     return {
       ...m,
       title: data.title || m.title,
@@ -74,7 +106,8 @@ async function enrichOne(m: Movie, key: string, language: string): Promise<Movie
       runtime: data.runtime || undefined,
       original_title: data.original_title || undefined,
       cast,
-      similar
+      similar,
+      trailer
     };
   } catch (err) {
     console.warn(`[tmdb] ${m.slug} (${language}): fetch failed —`, err);

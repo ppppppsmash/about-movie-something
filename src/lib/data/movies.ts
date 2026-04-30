@@ -38,6 +38,8 @@ export type Movie = {
   original_title?: string;
   cast?: CastMember[];
   similar?: SimilarMovie[];
+  /** Oldest official YouTube trailer, when one exists on TMDB. */
+  trailer?: { site: 'YouTube'; key: string };
 };
 
 /** Seed movies — kept empty now that Notion is the source of truth.

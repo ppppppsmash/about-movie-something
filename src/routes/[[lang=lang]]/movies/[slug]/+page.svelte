@@ -55,19 +55,27 @@
     <p class="font-serif-italic text-md text-center">"{m.tagline}"</p>
   {/if}
 
-  {#if m.notion_page_id}
-    <NoteEditor movie={m} />
-  {:else if m.note}
-    <section>
-      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'notes.section')}</h3>
-      <p class="leading-relaxed whitespace-pre-wrap">{m.note}</p>
-    </section>
-  {/if}
-
   {#if m.overview}
     <section>
       <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.overview')}</h3>
       <p class="leading-relaxed">{m.overview}</p>
+    </section>
+  {/if}
+
+  {#if m.trailer}
+    <section>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'section.trailer')}</h3>
+      <div class="aspect-video w-full border border-mute">
+        <iframe
+          src={`https://www.youtube-nocookie.com/embed/${m.trailer.key}`}
+          title="Trailer"
+          loading="lazy"
+          allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen
+          referrerpolicy="strict-origin-when-cross-origin"
+          class="block w-full h-full"
+        ></iframe>
+      </div>
     </section>
   {/if}
 
@@ -82,6 +90,15 @@
           </li>
         {/each}
       </ul>
+    </section>
+  {/if}
+
+  {#if m.notion_page_id}
+    <NoteEditor movie={m} />
+  {:else if m.note}
+    <section>
+      <h3 class="font-serif-bold uppercase text-xs mb-3">{t(locale, 'notes.section')}</h3>
+      <p class="leading-relaxed whitespace-pre-wrap">{m.note}</p>
     </section>
   {/if}
 
