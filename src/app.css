@@ -9,7 +9,7 @@
      adapts to both modes via `color-scheme` on <html>. */
   /* Default theme: Cinema Noir — high-contrast off-white/black, warm gold accent.
      Overridden below by `:root[data-theme="..."]` for the other palettes. */
-  --color-paper: light-dark(#f5f3ef, #0a0a0a);
+  --color-paper: light-dark(#fafaf6, #0a0a0a);
   --color-ink: light-dark(#0a0a0a, #f5f3ef);
   --color-mute: light-dark(rgba(10, 10, 10, 0.35), rgba(245, 243, 239, 0.35));
   --color-focus: light-dark(#c9a050, #e8b751);
@@ -67,9 +67,11 @@
 }
 
 /* Alternate palettes — switch via `[data-theme]` on <html>. Each keeps the
-   same `light-dark()` adaptive structure as the default Noir tokens above. */
+   same `light-dark()` adaptive structure as the default Noir tokens above.
+   Light-mode `--color-paper` values are intentionally pushed apart so the
+   `background-blend-mode: multiply` on body produces a clearly different tint. */
 :root[data-theme='vintage'] {
-  --color-paper: light-dark(#ede5d3, #1a1410);
+  --color-paper: light-dark(#e8d4a8, #1a1410);
   --color-ink: light-dark(#2a1f12, #e8d5b7);
   --color-mute: light-dark(rgba(42, 31, 18, 0.35), rgba(232, 213, 183, 0.35));
   --color-focus: light-dark(#9c5a2c, #d68b3e);
@@ -131,6 +133,9 @@
     background-repeat: repeat;
     background-attachment: fixed;
     background-size: 1400px auto;
+    /* Tint the opaque pattern with the theme's paper color so theme changes are visible
+       even where bg-pattern.jpg fully covers the body. */
+    background-blend-mode: multiply;
     font-family: var(--font-serif);
     font-size: var(--text-base);
     font-weight: 300;
@@ -145,10 +150,12 @@
   @media (prefers-color-scheme: dark) {
     :root:not([data-user-color-scheme]) body {
       background-image: url('/images/bg-pattern-dark.jpg');
+      background-blend-mode: normal;
     }
   }
   [data-user-color-scheme='dark'] body {
     background-image: url('/images/bg-pattern-dark.jpg');
+    background-blend-mode: normal;
   }
 
   ::selection {
