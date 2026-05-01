@@ -208,4 +208,23 @@
   button:active {
     transform: translateY(1px);
   }
+
+  /* Tint the WebKit search-input clear button (×) with --color-ink so it doesn't
+     stay a flat white that disappears against light themes. */
+  input[type='search']::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 0.9em;
+    height: 0.9em;
+    background-color: var(--color-ink);
+    -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='1.6' stroke-linecap='round'/></svg>");
+    mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M4 4l8 8M12 4l-8 8' stroke='black' stroke-width='1.6' stroke-linecap='round'/></svg>");
+    -webkit-mask-size: contain;
+    mask-size: contain;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    mask-position: center;
+    cursor: pointer;
+  }
 }
