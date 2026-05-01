@@ -222,7 +222,7 @@ export async function getVisibleNotes(
   // Enrich each unique tmdb_id with TMDB data once.
   const uniqueIds = [...new Set(withNotes.map((r) => r.tmdb_id))];
   const stubs: Movie[] = uniqueIds.map((id) => ({
-    slug: `tmdb-${id}`,
+    slug: `movie-${id}`,
     tmdb_id: id,
     title: '',
     year: 0,
@@ -247,7 +247,7 @@ export async function getVisibleNotes(
           title: m?.title ?? '',
           year: m?.year ?? 0,
           poster: m?.poster,
-          slug: m?.slug ?? `tmdb-${r.tmdb_id}`
+          slug: m?.slug ?? `movie-${r.tmdb_id}`
         }
       };
     })
@@ -355,7 +355,7 @@ export function mergeNotionWithSeed(seed: Movie[], notion: NotionMovie[]): Movie
   for (const n of notion) {
     const base = byId.get(n.tmdb_id);
     byId.set(n.tmdb_id, {
-      slug: base?.slug ?? `tmdb-${n.tmdb_id}`,
+      slug: base?.slug ?? `movie-${n.tmdb_id}`,
       title: base?.title ?? '',
       year: base?.year ?? 0,
       director: base?.director ?? '',

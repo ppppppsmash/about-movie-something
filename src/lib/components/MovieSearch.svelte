@@ -1,6 +1,7 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
   import { page } from '$app/state';
-  import { resolveLocale, t } from '$lib/i18n';
+  import { resolveLocale, localePath, t } from '$lib/i18n';
 
   const locale = $derived(resolveLocale(page.params.lang));
   const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
@@ -13,12 +14,23 @@
     poster?: string;
   };
 
+  const STORAGE_KEY = 'movieSearch:q';
   let q = $state('');
   let results = $state<SearchResult[]>([]);
   let loading = $state(false);
   let marks = $state<Record<number, 'watched' | 'queue' | 'best' | 'error' | 'pending'>>({});
 
   let timer: ReturnType<typeof setTimeout> | null = null;
+
+  // Restore previous query on mount; the existing $effect repopulates results.
+  onMount(() => {
+    const saved = sessionStorage.getItem(STORAGE_KEY);
+    if (saved) q = saved;
+  });
+
+  $effect(() => {
+    sessionStorage.setItem(STORAGE_KEY, q);
+  });
 
   function runSearch(query: string) {
     if (timer) clearTimeout(timer);
@@ -83,58 +95,67 @@
     <ul class="mt-6 grid gap-6">
       {#each results as r}
         {@const state = marks[r.tmdb_id]}
-        <li class="flex items-start gap-3">
-          {#if r.poster}
-            <img
-              src={r.poster}
-              alt=""
-              loading="lazy"
-              class="block w-16 h-auto border border-mute"
-            />
-          {/if}
-          <div class="flex-1 leading-tight">
-            <p class="font-serif-bold">{r.title}</p>
-            {#if r.year}
-              <p class="text-sm font-serif-light">{r.year}</p>
+        <li>
+          <a
+            href={localePath(locale, `/movies/movie-${r.tmdb_id}`)}
+            class="flex items-start gap-3 no-underline group"
+          >
+            {#if r.poster}
+              <img
+                src={r.poster}
+                alt=""
+                loading="lazy"
+                class="block w-16 h-auto border border-mute grayscale group-hover:grayscale-0 transition-[filter] duration-150"
+              />
             {/if}
-            {#if r.overview}
-              <p class="mt-1 text-sm font-serif-light line-clamp-2">{r.overview}</p>
-            {/if}
-            <div class="mt-2 flex gap-3 text-xs uppercase">
-              {#if state === 'watched' || state === 'queue' || state === 'best'}
-                <span class="font-serif-light">✓ {t(locale, 'search.added')}</span>
-              {:else if state === 'pending'}
-                <span class="font-serif-light">…</span>
-              {:else if state === 'error'}
-                <span class="font-serif-light">{t(locale, 'search.error')}</span>
-              {:else if !isSignedIn}
-                <span class="font-serif-italic normal-case text-mute"
-                  >{t(locale, 'auth.required')}</span
-                >
-              {:else}
-                <button
-                  type="button"
-                  class="font-serif-light no-underline hover:underline"
-                  onclick={() => mark(r, 'watched')}
-                >
-                  {t(locale, 'search.mark.watched')}
-                </button>
-                <button
-                  type="button"
-                  class="font-serif-light no-underline hover:underline"
-                  onclick={() => mark(r, 'queue')}
-                >
-                  {t(locale, 'search.mark.queue')}
-                </button>
-                <button
-                  type="button"
-                  class="font-serif-light no-underline hover:underline"
-                  onclick={() => mark(r, 'best')}
-                >
-                  {t(locale, 'search.mark.best')}
-                </button>
+            <div class="flex-1 leading-tight">
+              <p
+                class="font-serif-bold group-hover:underline group-hover:decoration-wavy group-hover:underline-offset-[3px]"
+              >
+                {r.title}
+              </p>
+              {#if r.year}
+                <p class="text-sm font-serif-light">{r.year}</p>
+              {/if}
+              {#if r.overview}
+                <p class="mt-1 text-sm font-serif-light line-clamp-2">{r.overview}</p>
               {/if}
             </div>
+          </a>
+          <div class="mt-2 flex gap-3 text-xs uppercase pl-[calc(4rem+0.75rem)]">
+            {#if state === 'watched' || state === 'queue' || state === 'best'}
+              <span class="font-serif-light">✓ {t(locale, 'search.added')}</span>
+            {:else if state === 'pending'}
+              <span class="font-serif-light">…</span>
+            {:else if state === 'error'}
+              <span class="font-serif-light">{t(locale, 'search.error')}</span>
+            {:else if !isSignedIn}
+              <span class="font-serif-italic normal-case text-mute"
+                >{t(locale, 'auth.required')}</span
+              >
+            {:else}
+              <button
+                type="button"
+                class="font-serif-light no-underline hover:underline"
+                onclick={() => mark(r, 'watched')}
+              >
+                {t(locale, 'search.mark.watched')}
+              </button>
+              <button
+                type="button"
+                class="font-serif-light no-underline hover:underline"
+                onclick={() => mark(r, 'queue')}
+              >
+                {t(locale, 'search.mark.queue')}
+              </button>
+              <button
+                type="button"
+                class="font-serif-light no-underline hover:underline"
+                onclick={() => mark(r, 'best')}
+              >
+                {t(locale, 'search.mark.best')}
+              </button>
+            {/if}
           </div>
         </li>
       {/each}

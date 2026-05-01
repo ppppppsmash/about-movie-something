@@ -21,16 +21,23 @@
 
 <PageHeader chapter="I" title={t(locale, 'header.movies')} />
 
-<div class="mb-12">
-  <MovieSearch />
-</div>
+{#if isList}
+  <div class="mb-12">
+    <MovieSearch />
+  </div>
+{/if}
 
 <main id="content">
   {#if isList}
     <SubNav />
   {:else}
-    <nav class="mb-12 flex text-sm uppercase">
-      <a href={moviesPath} class="font-serif-light no-underline hover:underline">{t(locale, 'back.movies')}</a>
+    <nav class="mb-10 sticky top-0 z-10 -mx-[var(--content-padding)] px-[var(--content-padding)] py-3 bg-paper border-b border-mute">
+      <a
+        href={moviesPath}
+        class="font-serif-bold text-sm uppercase tracking-wider no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px]"
+      >
+        {t(locale, 'back.movies')}
+      </a>
     </nav>
   {/if}
   {@render children()}
