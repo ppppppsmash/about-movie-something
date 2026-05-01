@@ -2,6 +2,7 @@
   import { onMount } from 'svelte';
   import { page } from '$app/state';
   import { resolveLocale, localePath, t } from '$lib/i18n';
+  import { toast } from '$lib/stores/toast.svelte';
 
   const locale = $derived(resolveLocale(page.params.lang));
   const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
@@ -73,8 +74,10 @@
         throw new Error(msg);
       }
       marks = { ...marks, [r.tmdb_id]: action };
+      toast.show(`${r.title} · ${t(locale, 'search.added')}`);
     } catch {
       marks = { ...marks, [r.tmdb_id]: 'error' };
+      toast.show(t(locale, 'search.error'), 'error');
     }
   }
 </script>
@@ -127,8 +130,6 @@
               <span class="font-serif-light">✓ {t(locale, 'search.added')}</span>
             {:else if state === 'pending'}
               <span class="font-serif-light">…</span>
-            {:else if state === 'error'}
-              <span class="font-serif-light">{t(locale, 'search.error')}</span>
             {:else if !isSignedIn}
               <span class="font-serif-italic normal-case text-mute"
                 >{t(locale, 'auth.required')}</span
@@ -136,21 +137,21 @@
             {:else}
               <button
                 type="button"
-                class="font-serif-light no-underline hover:underline"
+                class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px]"
                 onclick={() => mark(r, 'watched')}
               >
                 {t(locale, 'search.mark.watched')}
               </button>
               <button
                 type="button"
-                class="font-serif-light no-underline hover:underline"
+                class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px]"
                 onclick={() => mark(r, 'queue')}
               >
                 {t(locale, 'search.mark.queue')}
               </button>
               <button
                 type="button"
-                class="font-serif-light no-underline hover:underline"
+                class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px]"
                 onclick={() => mark(r, 'best')}
               >
                 {t(locale, 'search.mark.best')}

@@ -5,6 +5,7 @@
   import { t, resolveLocale, localePath } from '$lib/i18n';
   import NoteEditor from '$lib/components/NoteEditor.svelte';
   import BestToggle from '$lib/components/BestToggle.svelte';
+  import { toast } from '$lib/stores/toast.svelte';
 
   let { data } = $props();
   const m = $derived(data.movie);
@@ -28,8 +29,10 @@
       if (!res.ok) throw new Error(String(res.status));
       await invalidate('app:movies');
       actionState = 'idle';
+      toast.show(`${m.title} · ${t(locale, 'search.added')}`);
     } catch {
       actionState = 'error';
+      toast.show(t(locale, 'search.error'), 'error');
     }
   }
 
@@ -45,8 +48,11 @@
       if (!res.ok) throw new Error(String(res.status));
       await invalidate('app:movies');
       actionState = 'idle';
+      const label = next === 'watched' ? t(locale, 'tab.watched') : t(locale, 'tab.queue');
+      toast.show(`→ ${label}`);
     } catch {
       actionState = 'error';
+      toast.show(t(locale, 'search.error'), 'error');
     }
   }
 </script>
@@ -131,7 +137,7 @@
         <button
           type="button"
           disabled={actionState === 'pending'}
-          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+          class="px-3 py-1.5 border border-mute hover:border-ink bg-paper transition-colors font-serif-light disabled:opacity-50"
           onclick={() => add('queue')}
         >
           {t(locale, 'search.mark.queue')}
@@ -139,7 +145,7 @@
         <button
           type="button"
           disabled={actionState === 'pending'}
-          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+          class="px-3 py-1.5 border border-mute hover:border-ink bg-paper transition-colors font-serif-light disabled:opacity-50"
           onclick={() => add('best')}
         >
           {t(locale, 'search.mark.best')}
@@ -147,8 +153,6 @@
       {/if}
       {#if actionState === 'pending'}
         <span class="font-serif-italic normal-case text-mute">…</span>
-      {:else if actionState === 'error'}
-        <span class="font-serif-italic normal-case text-mute">{t(locale, 'search.error')}</span>
       {/if}
     </div>
   {/if}
