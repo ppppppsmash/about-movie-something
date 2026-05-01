@@ -1,5 +1,5 @@
 import { error } from '@sveltejs/kit';
-import { getCombinedMovies, getVisibleMovies } from '$lib/server/notion';
+import { getCombinedMovies, getNotionMovies, getVisibleMovies } from '$lib/server/notion';
 import { enrichMovies } from '$lib/server/tmdb';
 import { resolveLocale } from '$lib/i18n';
 import type { Movie } from '$lib/data/movies';
@@ -35,5 +35,16 @@ export const load: PageServerLoad = async ({ params, locals }) => {
   }
 
   if (!movie) error(404, 'Movie not found');
-  return { movie };
+
+  // `isOwn` distinguishes the viewer's own row (editable) from a foreign public row
+  // (read-only) — controls whether the detail page shows edit vs. add affordances.
+  let isOwn = false;
+  if (session?.user?.email && movie.notion_page_id) {
+    const ownPageIds = new Set(
+      (await getNotionMovies(session.user.email)).map((m) => m.page_id)
+    );
+    isOwn = ownPageIds.has(movie.notion_page_id);
+  }
+
+  return { movie, isOwn };
 };

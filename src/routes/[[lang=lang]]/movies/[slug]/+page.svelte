@@ -1,12 +1,54 @@
 <script lang="ts">
+  import { invalidate } from '$app/navigation';
   import { page } from '$app/state';
   import { roman } from '$lib/data/movies';
-  import { t, resolveLocale } from '$lib/i18n';
+  import { t, resolveLocale, localePath } from '$lib/i18n';
   import NoteEditor from '$lib/components/NoteEditor.svelte';
+  import BestToggle from '$lib/components/BestToggle.svelte';
 
   let { data } = $props();
   const m = $derived(data.movie);
   const locale = $derived(resolveLocale(page.params.lang));
+  const isSignedIn = $derived(!!(page.data.session as { user?: unknown } | null)?.user);
+
+  let actionState = $state<'idle' | 'pending' | 'error'>('idle');
+
+  async function add(action: 'watched' | 'queue' | 'best') {
+    actionState = 'pending';
+    try {
+      const body =
+        action === 'best'
+          ? { tmdb_id: m.tmdb_id, title: m.title, status: 'watched', best: true }
+          : { tmdb_id: m.tmdb_id, title: m.title, status: action };
+      const res = await fetch('/api/movies', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      await invalidate('app:movies');
+      actionState = 'idle';
+    } catch {
+      actionState = 'error';
+    }
+  }
+
+  async function changeStatus(next: 'watched' | 'queue') {
+    if (!m.notion_page_id) return;
+    actionState = 'pending';
+    try {
+      const res = await fetch(`/api/movies/${m.notion_page_id}`, {
+        method: 'PATCH',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ status: next })
+      });
+      if (!res.ok) throw new Error(String(res.status));
+      await invalidate('app:movies');
+      actionState = 'idle';
+    } catch {
+      actionState = 'error';
+    }
+  }
 </script>
 
 <svelte:head>
@@ -50,6 +92,66 @@
       </div>
     </div>
   </header>
+
+  {#if isSignedIn}
+    <div class="-mt-6 flex items-center gap-4 text-xs uppercase tracking-wider">
+      {#if data.isOwn}
+        <span class="font-serif-bold">
+          {m.status === 'watched' ? t(locale, 'tab.watched') : t(locale, 'tab.queue')}
+        </span>
+        {#if m.status === 'queue'}
+          <button
+            type="button"
+            disabled={actionState === 'pending'}
+            class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+            onclick={() => changeStatus('watched')}
+          >
+            {t(locale, 'search.mark.watched')}
+          </button>
+        {:else}
+          <button
+            type="button"
+            disabled={actionState === 'pending'}
+            class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+            onclick={() => changeStatus('queue')}
+          >
+            {t(locale, 'search.mark.queue')}
+          </button>
+        {/if}
+        <BestToggle movie={m} />
+      {:else}
+        <button
+          type="button"
+          disabled={actionState === 'pending'}
+          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+          onclick={() => add('watched')}
+        >
+          {t(locale, 'search.mark.watched')}
+        </button>
+        <button
+          type="button"
+          disabled={actionState === 'pending'}
+          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+          onclick={() => add('queue')}
+        >
+          {t(locale, 'search.mark.queue')}
+        </button>
+        <button
+          type="button"
+          disabled={actionState === 'pending'}
+          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
+          onclick={() => add('best')}
+        >
+          {t(locale, 'search.mark.best')}
+        </button>
+      {/if}
+      {#if actionState === 'pending'}
+        <span class="font-serif-italic normal-case text-mute">…</span>
+      {:else if actionState === 'error'}
+        <span class="font-serif-italic normal-case text-mute">{t(locale, 'search.error')}</span>
+      {/if}
+    </div>
+  {/if}
 
   {#if m.tagline}
     <p class="font-serif-italic text-md text-center">"{m.tagline}"</p>
@@ -108,17 +210,24 @@
       <ul class="grid grid-cols-3 gap-3">
         {#each m.similar as s}
           <li>
-            {#if s.poster}
-              <img
-                src={s.poster}
-                alt={s.title}
-                loading="lazy"
-                class="w-full h-auto block border border-mute"
-              />
-            {/if}
-            <p class="mt-1 text-xs font-serif-light leading-tight">
-              {s.title}{#if s.year} <span class="text-mute">({s.year})</span>{/if}
-            </p>
+            <a
+              href={localePath(locale, `/movies/movie-${s.id}`)}
+              class="block no-underline group"
+            >
+              {#if s.poster}
+                <img
+                  src={s.poster}
+                  alt={s.title}
+                  loading="lazy"
+                  class="w-full h-auto block border border-mute grayscale group-hover:grayscale-0 transition-[filter] duration-150"
+                />
+              {/if}
+              <p
+                class="mt-1 text-xs font-serif-light leading-tight group-hover:underline group-hover:decoration-wavy group-hover:underline-offset-[3px]"
+              >
+                {s.title}{#if s.year} <span class="text-mute">({s.year})</span>{/if}
+              </p>
+            </a>
           </li>
         {/each}
       </ul>
