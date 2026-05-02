@@ -95,7 +95,9 @@
   {:else if q && results.length === 0}
     <p class="mt-4 text-center text-sm font-serif-italic">{t(locale, 'search.empty')}</p>
   {:else if results.length > 0}
-    <ul class="mt-6 grid gap-6">
+    <ul
+      class="results-scroll mt-6 grid gap-6 min-[500px]:max-h-[60vh] min-[500px]:overflow-y-auto min-[500px]:pr-2"
+    >
       {#each results as r}
         {@const state = marks[r.tmdb_id]}
         <li>
@@ -163,3 +165,25 @@
     </ul>
   {/if}
 </section>
+
+<style>
+  /* Match scrollbar to the literary palette: thin track, ink-toned thumb that
+     darkens on hover. Falls back to Firefox's `scrollbar-color` syntax. */
+  .results-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-mute) transparent;
+  }
+  .results-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+  .results-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .results-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-mute);
+    border-radius: 0;
+  }
+  .results-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink);
+  }
+</style>
