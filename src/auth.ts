@@ -5,6 +5,7 @@ import { env } from '$env/dynamic/private';
 export const { handle, signIn, signOut } = SvelteKitAuth({
   trustHost: true,
   secret: env.AUTH_SECRET,
+  session: { maxAge: 24 * 60 * 60 },
   providers: [
     Google({
       clientId: env.AUTH_GOOGLE_ID,
