@@ -115,12 +115,30 @@
   html {
     height: 100%;
     color-scheme: light dark;
+    /* Page scrollbar tinted to the literary palette — thin track, ink-toned thumb,
+       darker on hover. Matches the in-component scrollbar used by MovieSearch. */
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-mute) transparent;
   }
   html[data-user-color-scheme='light'] {
     color-scheme: light;
   }
   html[data-user-color-scheme='dark'] {
     color-scheme: dark;
+  }
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-mute);
+    border-radius: 0;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-ink);
   }
 
   body {
