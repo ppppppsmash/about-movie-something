@@ -6,7 +6,6 @@
   import { colorScheme } from '$lib/stores/colorScheme.svelte';
   import { theme } from '$lib/stores/theme.svelte';
   import MainNav from '$lib/components/MainNav.svelte';
-  import AuthIndicator from '$lib/components/AuthIndicator.svelte';
   import Toast from '$lib/components/Toast.svelte';
 
   let { children } = $props();
@@ -38,7 +37,6 @@
   <title>Movie Log</title>
 </svelte:head>
 
-<AuthIndicator />
 <Toast />
 
 {#if !isHome}
