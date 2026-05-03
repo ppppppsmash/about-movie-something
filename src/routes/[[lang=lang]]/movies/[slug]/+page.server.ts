@@ -8,7 +8,10 @@ import type { PageServerLoad } from './$types';
 // /movies/[slug] is dynamic (combined data from Notion + seed), so no prerender.
 export const prerender = false;
 
-export const load: PageServerLoad = async ({ params, locals }) => {
+export const load: PageServerLoad = async ({ params, locals, depends }) => {
+  // Re-run when add/patch flows call `invalidate('app:movies')` so isOwn / status
+  // reflect the new server state without a full reload.
+  depends('app:movies');
   const session = await locals.auth();
   const locale = resolveLocale(params.lang);
   const movies = session?.user?.email

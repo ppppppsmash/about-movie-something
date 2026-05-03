@@ -102,8 +102,12 @@
   {#if isSignedIn}
     <div class="-mt-6 flex items-center gap-4 text-xs uppercase tracking-wider">
       {#if data.isOwn}
-        <span class="font-serif-bold">
-          {m.status === 'watched' ? t(locale, 'tab.watched') : t(locale, 'tab.queue')}
+        <span class="bg-ink text-paper pt-1 font-serif-bold leading-none">
+          {m.best
+            ? t(locale, 'tab.best')
+            : m.status === 'watched'
+              ? t(locale, 'tab.watched')
+              : t(locale, 'tab.queue')}
         </span>
         {#if m.status === 'queue'}
           <button
@@ -137,7 +141,7 @@
         <button
           type="button"
           disabled={actionState === 'pending'}
-          class="px-3 py-1.5 border border-mute hover:border-ink bg-paper transition-colors font-serif-light disabled:opacity-50"
+          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
           onclick={() => add('queue')}
         >
           {t(locale, 'search.mark.queue')}
@@ -145,7 +149,7 @@
         <button
           type="button"
           disabled={actionState === 'pending'}
-          class="px-3 py-1.5 border border-mute hover:border-ink bg-paper transition-colors font-serif-light disabled:opacity-50"
+          class="font-serif-light no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px] disabled:opacity-50"
           onclick={() => add('best')}
         >
           {t(locale, 'search.mark.best')}

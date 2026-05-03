@@ -128,8 +128,18 @@
             </div>
           </a>
           <div class="mt-2 flex gap-3 text-xs uppercase pl-[calc(4rem+0.75rem)]">
-            {#if state === 'watched' || state === 'queue' || state === 'best'}
-              <span class="font-serif-light">✓ {t(locale, 'search.added')}</span>
+            {#if state === 'watched'}
+              <span class="bg-ink text-paper pt-1 font-serif-bold leading-none">
+                {t(locale, 'search.mark.watched')}
+              </span>
+            {:else if state === 'queue'}
+              <span class="bg-ink text-paper pt-1 font-serif-bold leading-none">
+                {t(locale, 'search.mark.queue')}
+              </span>
+            {:else if state === 'best'}
+              <span class="bg-ink text-paper pt-1 font-serif-bold leading-none">
+                {t(locale, 'search.mark.best')}
+              </span>
             {:else if state === 'pending'}
               <span class="font-serif-light">…</span>
             {:else if !isSignedIn}
