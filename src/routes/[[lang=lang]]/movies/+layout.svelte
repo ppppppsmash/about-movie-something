@@ -31,7 +31,7 @@
   {#if isList}
     <SubNav />
   {:else}
-    <nav class="mb-10 sticky top-0 z-10 -mx-[var(--content-padding)] px-[var(--content-padding)] py-3 bg-paper border-b border-mute">
+    <nav class="mb-10 sticky top-0 z-10 -mx-[var(--content-padding)] px-[var(--content-padding)] py-3">
       <a
         href={moviesPath}
         class="font-serif-bold text-sm uppercase tracking-wider no-underline hover:underline hover:decoration-wavy hover:underline-offset-[3px]"
